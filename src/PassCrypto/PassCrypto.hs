@@ -5,11 +5,16 @@
 #-}
 module PassCrypto.PassCrypto where
 
+import Debug.Trace
+
 import Crypto.Error (CryptoFailable(..))
 import Crypto.Cipher.Types
 import Crypto.Cipher.AES
 import Crypto.Hash
 import GHC.Generics
+import Data.Binary (Binary, Word8)
+import qualified Data.Binary as Binary
+import qualified Data.ByteString.Lazy as ByteString.Lazy
 import Data.ByteArray (convert)
 import Data.Either
 import Data.Text (Text)
@@ -46,26 +51,43 @@ decryptWithMasterKey mk ct = do
   return $ decodeUtf8 $ plainBytes
 
 encrypt :: ByteString -> AES256 -> CryptoFailable CipherText
-encrypt pt cipher = return $ CipherText $ ecbEncrypt cipher (padToBlockSize pt)
+encrypt pt cipher = do
+  let (padSizeBS, leftover) =  B.splitAt 1 (padToBlockSize pt)
+  return $
+    CipherText $ cbcEncrypt cipher nullIV (padToBlockSize pt)
   where
     padToBlockSize bytes =
-      if blockSizeOffset /= 16
-        then padNulls blockSizeOffset bytes
-        else bytes
+      let
+        prependedBytes = (prependPadOffset (blockSizeOffset bytes - 1) bytes)
+        padOffset = blockSizeOffset prependedBytes
+      in padNulls padOffset prependedBytes
       where
-        blockSizeOffset = 16 - (B.length bytes) `mod` 16
+        blockSizeOffset bs = 16 - (B.length bs) `mod` 16
         padNulls 0 bs = bs
+        padNulls 16 bs = bs
         padNulls n bs = padNulls (n-1) (B.append bs $ B.singleton 0)
+        prependPadOffset n bs =
+          (B.singleton  (fromIntegral n))
+          `B.append`
+          bs
 
 decrypt :: CipherText -> AES256 -> CryptoFailable ByteString
-decrypt ct cipher= return $ removeNull (ecbDecrypt cipher $ cTxt ct)
+decrypt ct cipher = do
+  return $
+    removeNull $ cbcDecrypt cipher nullIV (cTxt ct)
   where
-    removeNull bytes = B.foldr' (\x y -> if x == 0 then y else B.cons x y) B.empty bytes
+    removeNull bytes =
+      let
+        (padSizeBS, leftover) =  B.splitAt 1 bytes
+        padSize = fromIntegral ((Binary.decode (ByteString.Lazy.fromStrict padSizeBS))::Word8)
+      in B.take (B.length leftover -  padSize) leftover
 
 testBlockCipher :: IO ()
 testBlockCipher =
     case encryptAndDecrypt (masterKey "super") "secret" of
-      CryptoFailed err -> print $ show err
+      CryptoFailed err -> do
+        print $ "Fucking error!!!"
+        print $ show err
       CryptoPassed text -> print $ show text
 
 
