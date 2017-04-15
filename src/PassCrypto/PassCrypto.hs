@@ -20,10 +20,10 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 
 newtype MasterKey = MasterKey {mKey :: ByteString}
-  deriving (Generic, Show)
+  deriving (Generic, Show , Eq)
 
 newtype CipherText = CipherText {cTxt :: ByteString}
-  deriving (Generic, Show)
+  deriving (Generic, Show, Eq)
 
 masterKey :: Text -> MasterKey
 masterKey = MasterKey . encodeUtf8
