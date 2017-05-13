@@ -3,9 +3,7 @@
   , LambdaCase
   , DeriveGeneric
 #-}
-module PassCrypto.PassCrypto where
-
-import Debug.Trace
+module ChainBlock.Crypto where
 
 import Crypto.Error (CryptoFailable(..))
 import Crypto.Cipher.Types
@@ -19,7 +17,6 @@ import Data.ByteArray (convert)
 import Data.Either
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8, decodeUtf8)
--- import qualifief Data.Text
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
@@ -86,7 +83,7 @@ testBlockCipher :: IO ()
 testBlockCipher =
     case encryptAndDecrypt (masterKey "super") "secret" of
       CryptoFailed err -> do
-        print $ "Fucking error!!!"
+        print $ "error!!!"
         print $ show err
       CryptoPassed text -> print $ show text
 

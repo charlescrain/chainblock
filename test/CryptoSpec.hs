@@ -1,13 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module PassCryptoSpec (main, spec) where
+module CryptoSpec (main, spec) where
 
 import Crypto.Error (CryptoFailable(..))
 import Data.ByteString.Base16 (encode, decode)
 import Data.Text (Text)
 import Test.Hspec
 
-import PassCrypto.PassCrypto
+import ChainBlock.Crypto
 
 main :: IO ()
 main = hspec spec

@@ -2,28 +2,37 @@ name:                chainblock
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:            https://github.com/githubuser/chainblock#readme
-license:             BSD3
-license-file:        LICENSE
-author:              Author name here
-maintainer:          example@example.com
-copyright:           2017 Author name here
-category:            Web
-build-type:          Simple
-cabal-version:       >=1.10
-extra-source-files:  README.md
+homepage:               https://github.com/githubuser/chainblock#readme
+license:                BSD3
+license-file:           LICENSE
+author:                 Charles Crain
+maintainer:             craincharles@gmail.com
+copyright:              2017 Charles Crain
+category:               Web
+build-type:             Simple
+cabal-version:          >=1.10
+extra-source-files:     README.md
 
-  executable chainblock
-  hs-source-dirs:      exec
-  main-is:             Main.hs
-  default-language:    Haskell2010
-  build-depends:       base >= 4.7 && < 5
+executable chainblock
+  hs-source-dirs:       app
+  main-is:              Main.hs
+  default-language:     Haskell2010
+  build-depends:        base >= 4.7 && < 5
+                      , aeson
+                      , chainblock
+                      , mtl
+                      , servant-server
+                      , wai
+                      , wai-cors
+                      , wai-extra
+                      , warp
 
 library
   hs-source-dirs:       src
-  exposed-modules:      PassCrypto.PassCrypto
+  exposed-modules:      ChainBlock.Crypto
+                      , Config.AppConfig
+                      , Config.Environment
   default-language:     Haskell2010
-  -- ghc-options:          -Wall -Werror
   build-depends:        base >= 4.7 && < 5
                       , base16-bytestring
                       , binary
@@ -32,8 +41,8 @@ library
                       , memory
                       , text
 
-test-suite            webapp-test
- type:                exitcode-stdio-1.0
+test-suite              webapp-test
+ type:                  exitcode-stdio-1.0
 
  hs-source-dirs:
    app
@@ -63,4 +72,4 @@ test-suite            webapp-test
 
  default-extensions:  OverloadedStrings
 
- other-modules:       PassCryptoSpec
+ other-modules:       CryptoSpec
