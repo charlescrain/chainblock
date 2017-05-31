@@ -1,4 +1,5 @@
-{-# LANGUAGE DataKinds, TypeOperators #-}
+{-# LANGUAGE DataKinds     #-}
+{-# LANGUAGE TypeOperators #-}
 
 module V0.Routing
   ( API
@@ -6,12 +7,17 @@ module V0.Routing
   , server
   ) where
 
-import Servant
+import           Servant
 
-import App (AppT)
+import           App                         (AppT)
+import           ChainBlock.API.ContentTypes
 
 
-type API = "v0" :> Get '[JSON] [String]
+type API = "v0" :> Get '[JSONAPI] [String]
+
+-- type UserSubRouteAPI =
+--   "users" :> Get '[JSON] [User]
+
 
 api :: Proxy API
 api = Proxy

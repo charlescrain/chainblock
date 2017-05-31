@@ -1,31 +1,22 @@
-{-# LANGUAGE
-    OverloadedStrings
-  , LambdaCase
-  , DeriveGeneric
-#-}
+{-# LANGUAGE LambdaCase        #-}
+{-# LANGUAGE OverloadedStrings #-}
 module ChainBlock.Crypto where
 
-import Crypto.Error (CryptoFailable(..))
-import Crypto.Cipher.Types
-import Crypto.Cipher.AES
-import Crypto.Hash
-import GHC.Generics
-import Data.Binary (Binary, Word8)
-import qualified Data.Binary as Binary
-import qualified Data.ByteString.Lazy as ByteString.Lazy
-import Data.ByteArray (convert)
-import Data.Either
-import Data.Text (Text)
-import Data.Text.Encoding (encodeUtf8, decodeUtf8)
+import           Crypto.Cipher.AES
+import           Crypto.Cipher.Types
+import           Crypto.Error            (CryptoFailable (..))
+import           Crypto.Hash
+import           Data.Binary             (Binary, Word8)
+import qualified Data.Binary             as Binary
+import           Data.ByteArray          (convert)
+import           Data.ByteString         (ByteString)
+import qualified Data.ByteString         as B
+import qualified Data.ByteString.Lazy    as ByteString.Lazy
+import           Data.Either
+import           Data.Text               (Text)
+import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
 
-import Data.ByteString (ByteString)
-import qualified Data.ByteString as B
-
-newtype MasterKey = MasterKey {mKey :: ByteString}
-  deriving (Generic, Show , Eq)
-
-newtype CipherText = CipherText {cTxt :: ByteString}
-  deriving (Generic, Show, Eq)
+import           ChainBlock.Crypto.Types
 
 masterKey :: Text -> MasterKey
 masterKey = MasterKey . encodeUtf8
@@ -60,9 +51,9 @@ encrypt pt cipher = do
       in padNulls padOffset prependedBytes
       where
         blockSizeOffset bs = 16 - (B.length bs) `mod` 16
-        padNulls 0 bs = bs
+        padNulls 0 bs  = bs
         padNulls 16 bs = bs
-        padNulls n bs = padNulls (n-1) (B.append bs $ B.singleton 0)
+        padNulls n bs  = padNulls (n-1) (B.append bs $ B.singleton 0)
         prependPadOffset n bs =
           (B.singleton  (fromIntegral n))
           `B.append`

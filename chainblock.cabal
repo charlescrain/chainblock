@@ -22,6 +22,7 @@ executable chainblock
                       , chainblock
                       , mtl
                       , servant-server
+                      , text
                       , wai
                       , wai-cors
                       , wai-extra
@@ -32,13 +33,19 @@ library
   exposed-modules:      ChainBlock.Crypto
                       , Config.AppConfig
                       , Config.Environment
+                      , ChainBlock.API.Types
+                      , ChainBlock.API.ContentTypes
   default-language:     Haskell2010
   build-depends:        base >= 4.7 && < 5
+                      , aeson
+                      , attoparsec
                       , base16-bytestring
                       , binary
                       , bytestring
                       , cryptonite
+                      , http-media
                       , memory
+                      , servant-server
                       , text
 
 test-suite              webapp-test
