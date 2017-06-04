@@ -13,10 +13,9 @@ import           Servant
 import           App                         (AppT)
 import           ChainBlock.API.ContentTypes
 import           ChainBlock.API.Types
-
+import           V0.Types
 
 type API = "v0" :> UserSubRouteAPI
-
 
 type UserSubRouteAPI =
         "users" :> Get '[JSONAPI] [User]
@@ -28,6 +27,11 @@ type WebsiteSubRouteAPI =
    :<|> "websites" :> ReqBody '[JSONAPI] PostMasterKey :> Post '[JSONAPI] WebsiteId
    :<|> "websites" :> "get" :> Capture "id" WebsiteId :> ReqBody '[JSONAPI] PostMasterKey :> Post '[JSONAPI] Website
 
+routeFunctions :: IRouteFunctions AppT
+routeFunctions = IRouteFunctions { getUsers = getUsers' }
+
+getUsers' :: AppT [User]
+getUsers' = throwError $ err500 {errBody="getUsersEntryPoint ** Under Constructions..Nothing to see here"}
 
 api :: Proxy API
 api = Proxy
@@ -47,7 +51,7 @@ userEntryPoints  = getUsersEntryPoint
               :<|> websiteEntryPoints
 
 getUsersEntryPoint :: AppT [User]
-getUsersEntryPoint = throwError $ err500 {errBody="getUsersEntryPoint ** Under Constructions..Nothing to see here"}
+getUsersEntryPoint = getUsers routeFunctions
 
 postUserEntryPoint :: PostUserBody -> AppT UserId
 postUserEntryPoint _ = throwError $ err500 {errBody="postUserEntryPoint ** Under Constructions..Nothing to see here"}

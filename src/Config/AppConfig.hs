@@ -3,12 +3,12 @@ module Config.AppConfig
   , getAppConfig
   ) where
 
-import System.Environment (getEnv)
+import           System.Environment (getEnv)
 
-import Config.Environment
+import           Config.Environment
 
 data AppConfig = AppConfig
-  { appEnv :: Environment
+  { appEnv  :: Environment
   , appPort :: Int
   } deriving (Show)
 
