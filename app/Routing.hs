@@ -26,9 +26,11 @@ type SubRoutesAPI = V0.API
 api :: Proxy API
 api = Proxy
 
-server  = \case
-  Just ("application/vnd.api+json" :: Text) -> subRoutesServer
-  _ -> throwError $ err415 {errBody="Please use 'application/vnd.api+json' as your content-type"}
+server :: ServerT API AppT
+server _ = subRoutesServer
+-- \case
+--   Just ("application/vnd.api+json" :: Text) -> subRoutesServer
+--   _ -> throwError $ err415 {errBody="Please use 'application/vnd.api+json' as your content-type"}
 
-subRoutesServer :: ServerT V0.API AppT
+subRoutesServer :: ServerT SubRoutesAPI AppT
 subRoutesServer = V0.server

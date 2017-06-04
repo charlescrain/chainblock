@@ -44,6 +44,7 @@ library
                       , bytestring
                       , cryptonite
                       , http-media
+                      , http-api-data
                       , memory
                       , servant-server
                       , text

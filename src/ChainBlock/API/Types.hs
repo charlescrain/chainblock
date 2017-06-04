@@ -3,8 +3,9 @@
 module ChainBlock.API.Types where
 
 import           Data.Aeson
-import           Data.Text    (Text)
+import           Data.Text       (Text)
 import           GHC.Generics
+import           Web.HttpApiData
 
 -----------------------------------------------------
 -- | User
@@ -37,7 +38,8 @@ newtype UserId = UserId {unUserId :: Text}
   deriving (Show, Eq, Ord, Generic)
 instance ToJSON UserId
 instance FromJSON UserId
-
+instance ToHttpApiData UserId
+instance FromHttpApiData UserId
 
 
 -----------------------------------------------------
@@ -88,6 +90,8 @@ newtype WebsiteId = WebsiteId  {unWebsiteId :: Integer}
   deriving (Show, Eq, Ord, Generic)
 instance ToJSON WebsiteId
 instance FromJSON WebsiteId
+instance ToHttpApiData WebsiteId
+instance FromHttpApiData WebsiteId
 
 
 
