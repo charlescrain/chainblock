@@ -6,27 +6,88 @@ import           Data.Aeson
 import           Data.Text    (Text)
 import           GHC.Generics
 
+-----------------------------------------------------
+-- | User
+-----------------------------------------------------
 
 data User =
-  User  { name :: Text
-        , id   :: Integer
+  User  { name :: Username
+        , id   :: UserId
         }
   deriving (Show, Eq, Generic)
-
 instance ToJSON User
+instance FromJSON User
 
-newtype Password = Password {unPassword :: Text}
-  deriving (Show, Eq, Ord)
+data PostUserBody = PostUserBody  { postUserBodyName :: Username }
+  deriving (Show, Eq, Generic)
+instance ToJSON PostUserBody
+instance FromJSON PostUserBody
+
+data PostMasterKey = PostMasterKey  { masterKey :: Text }
+  deriving (Show, Eq, Generic)
+instance ToJSON PostMasterKey
+instance FromJSON PostMasterKey
 
 newtype Username = Username {unUsername :: Text}
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON Username
+instance FromJSON Username
 
-newtype WebsiteURL = WebsiteURL  {unWebsiteURL :: Text}
-  deriving (Show, Eq, Ord)
+newtype UserId = UserId {unUserId :: Text}
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON UserId
+instance FromJSON UserId
+
+
+
+-----------------------------------------------------
+-- | Website
+-----------------------------------------------------
+
+data Website =
+  Website { websiteDetails     :: WebsiteDetails
+          , websiteCredentials :: [WebsiteCredentials]
+          }
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON Website
+instance FromJSON Website
+
+data WebsiteDetails =
+  WebsiteDetails { webURL      :: WebsiteURL
+                 , websiteName :: Text
+                 , websiteId   :: WebsiteId
+                 }
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON WebsiteDetails
+instance FromJSON WebsiteDetails
 
 data WebsiteCredentials =
-  WebsiteCredentials  { username :: Username
-                      , password :: Password
-                      , webURL   :: WebsiteURL
+  WebsiteCredentials  { username :: WebUsername
+                      , password :: WebPassword
                       }
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON WebsiteCredentials
+instance FromJSON WebsiteCredentials
+
+newtype WebPassword = WebPassword {unWebPassword :: Text}
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON WebPassword
+instance FromJSON WebPassword
+
+newtype WebUsername = WebUsername {unWebUsername :: Text}
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON WebUsername
+instance FromJSON WebUsername
+
+newtype WebsiteURL = WebsiteURL  {unWebsiteURL :: Text}
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON WebsiteURL
+instance FromJSON WebsiteURL
+
+newtype WebsiteId = WebsiteId  {unWebsiteId :: Integer}
+  deriving (Show, Eq, Ord, Generic)
+instance ToJSON WebsiteId
+instance FromJSON WebsiteId
+
+
+
