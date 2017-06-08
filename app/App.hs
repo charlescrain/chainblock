@@ -1,27 +1,38 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators     #-}
 
-module App
-  ( AppT
-  , AppConfig (..)
-  , getAppConfig
-  , runAppT
-  ) where
+module App (app, readerServer, readerToEither, corsPolicy, AppConfig(..), getAppConfig) where
 
-import           Config.AppConfig          (AppConfig (..), getAppConfig)
-import           Control.Monad.Error.Class (MonadError)
-import           Control.Monad.IO.Class    (MonadIO)
-import           Control.Monad.Reader      (MonadReader, ReaderT, runReaderT)
-import           Servant                   (Handler, ServantErr)
+import           Control.Monad.IO.Class               (MonadIO)
+import           Data.Monoid                          ((<>))
+import           Network.Wai                          as Wai
+import           Network.Wai.Handler.Warp
+import           Network.Wai.Middleware.Cors
+import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
+import           Servant
 
--- NOTE: `Handler` is equivalent to `type Handler = ExceptT ServantErr IO
-newtype AppT m a = AppT { unApp :: ReaderT (AppConfig m) Handler a }
-  deriving ( Functor
-           , Applicative
-           , Monad
-           , MonadIO
-           , MonadReader (AppConfig m)
-           , MonadError ServantErr
-           )
+import           API
+import           App.Transformer
+import           ChainBlock.DB
+import           Config.AppConfig                     (AppConfig (..),
+                                                       getAppConfig)
+import           Server                               (server)
 
-runAppT :: AppConfig m -> AppT m a -> Handler a
-runAppT cfg appT = runReaderT (unApp appT) cfg
+app :: MonadIO m => AppConfig m -> Wai.Application
+app cfg = logStdoutDev . cors (const $ Just corsPolicy) $
+            serve api (readerServer cfg)
+
+readerServer ::  MonadIO m => AppConfig m -> Server API
+readerServer cfg = enter (readerToEither cfg) server
+
+readerToEither :: MonadIO m => AppConfig m -> (AppT m) :~> Handler
+readerToEither cfg = Nat $ \appT -> runAppT cfg appT
+
+corsPolicy :: CorsResourcePolicy
+corsPolicy =
+  let allowedMethods = simpleMethods <> ["DELETE", "PUT", "PATCH", "OPTIONS"]
+      allowedHeaders = ["Content-Type"]
+  in
+    simpleCorsResourcePolicy { corsMethods = allowedMethods
+                             , corsRequestHeaders = allowedHeaders
+                             }

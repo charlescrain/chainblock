@@ -11,7 +11,7 @@ module Server.V0
 import           Servant
 
 import           API.V0
-import           App                         (AppT)
+import           App.Transformer             (AppT)
 import           ChainBlock.API.ContentTypes
 import           ChainBlock.API.Types
 import           ChainBlock.Interfaces

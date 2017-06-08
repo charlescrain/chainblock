@@ -8,12 +8,12 @@ module Server
   ( server
   ) where
 
-import           Data.Text (Text)
+import           Data.Text       (Text)
 import           Servant
 
-import           API       (API, SubRoutesAPI)
-import           App       (AppT)
-import qualified Server.V0 as V0
+import           API             (API, SubRoutesAPI)
+import           App.Transformer (AppT)
+import qualified Server.V0       as V0
 
 server :: ServerT API (AppT m)
 server _ = subRoutesServer

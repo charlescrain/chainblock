@@ -6,11 +6,11 @@
 
 module API where
 
-import           Data.Text (Text)
+import           Data.Text       (Text)
 import           Servant
 
-import qualified API.V0    as V0
-import           App       (AppT)
+import qualified API.V0          as V0
+import           App.Transformer (AppT)
 
 type API = "api" :> Header "Accept" Text :> SubRoutesAPI
 

@@ -73,6 +73,11 @@ test-suite              webapp-test
                       , text
                       , warp
                       , wreq
+                      , mtl
+                      , servant-server
+                      , wai
+                      , wai-cors
+                      , wai-extra
 
  ghc-options:         -Wall
                       -fwarn-unused-matches
