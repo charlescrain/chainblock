@@ -28,13 +28,17 @@ executable chainblock
                       , wai-extra
                       , warp
 
+
 library
   hs-source-dirs:       src
   exposed-modules:      ChainBlock.Crypto
+                      , ChainBlock.Crypto.Types
                       , Config.AppConfig
                       , Config.Environment
                       , ChainBlock.API.Types
                       , ChainBlock.API.ContentTypes
+                      , ChainBlock.Interfaces
+                      , ChainBlock.DB
   default-language:     Haskell2010
   build-depends:        base >= 4.7 && < 5
                       , aeson
@@ -46,6 +50,7 @@ library
                       , http-media
                       , http-api-data
                       , memory
+                      , mtl
                       , servant-server
                       , text
 
@@ -66,6 +71,8 @@ test-suite              webapp-test
                       , memory
                       , chainblock
                       , text
+                      , warp
+                      , wreq
 
  ghc-options:         -Wall
                       -fwarn-unused-matches

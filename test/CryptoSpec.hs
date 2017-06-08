@@ -2,12 +2,13 @@
 
 module CryptoSpec (main, spec) where
 
-import Crypto.Error (CryptoFailable(..))
-import Data.ByteString.Base16 (encode, decode)
-import Data.Text (Text)
-import Test.Hspec
+import           Crypto.Error            (CryptoFailable (..))
+import           Data.ByteString.Base16  (decode, encode)
+import           Data.Text               (Text)
+import           Test.Hspec
 
-import ChainBlock.Crypto
+import           ChainBlock.Crypto
+import           ChainBlock.Crypto.Types
 
 main :: IO ()
 main = hspec spec
@@ -31,7 +32,7 @@ spec = do
 
 isCryptoPassed :: CryptoFailable a -> Bool
 isCryptoPassed (CryptoPassed _) = True
-isCryptoPassed _ = False
+isCryptoPassed _                = False
 
 testCipherText :: CipherText
 testCipherText = CipherText $ fst . decode $ "0cd77062733518846a4179e709767b16455dd986958e1f6ed2439e2d991ab308ed08075f17c688400e560f8276824251"
