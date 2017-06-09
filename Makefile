@@ -1,4 +1,4 @@
-.PHONY: build test citest
+.PHONY:
 
 start-chainblock:
 	ENV=Development \
@@ -8,4 +8,4 @@ start-chainblock:
 		DB_PASS=webapp \
 		DB_HOST=172.19.0.1 \
 		DB_POOL_SIZE=5 \
-		stack exec webapp
+		stack exec chainblock

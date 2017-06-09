@@ -1,13 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module PassCryptoSpec (main, spec) where
+module CryptoSpec (main, spec) where
 
-import Crypto.Error (CryptoFailable(..))
-import Data.ByteString.Base16 (encode, decode)
-import Data.Text (Text)
-import Test.Hspec
+import           Crypto.Error            (CryptoFailable (..))
+import           Data.ByteString.Base16  (decode, encode)
+import           Data.Text               (Text)
+import           Test.Hspec
 
-import PassCrypto.PassCrypto
+import           ChainBlock.Crypto
+import           ChainBlock.Crypto.Types
 
 main :: IO ()
 main = hspec spec
@@ -31,10 +32,10 @@ spec = do
 
 isCryptoPassed :: CryptoFailable a -> Bool
 isCryptoPassed (CryptoPassed _) = True
-isCryptoPassed _ = False
+isCryptoPassed _                = False
 
 testCipherText :: CipherText
-testCipherText = CipherText $ fst . decode $ "ff792cda3b66783c9272734243bf997556d4d1fac019397f169255a6a18d83ba5235c34e0ac6f6e537b3d82729738355"
+testCipherText = CipherText $ fst . decode $ "0cd77062733518846a4179e709767b16455dd986958e1f6ed2439e2d991ab308ed08075f17c688400e560f8276824251"
 
 testKey :: MasterKey
 testKey = MasterKey "can't touch this vault 7"
