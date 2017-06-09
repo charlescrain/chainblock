@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module App (app, readerServer, readerToEither, corsPolicy, AppConfig(..), getAppConfig) where
+module App
+  ( app
+  , AppConfig(..)
+  , getAppConfig
+  ) where
 
 import           Control.Monad.IO.Class               (MonadIO)
 import           Data.Monoid                          ((<>))

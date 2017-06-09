@@ -66,10 +66,12 @@ test-suite              webapp-test
  build-depends:         base
                       , base16-bytestring
                       , bytestring
+                      , aeson
                       , cryptonite
                       , hspec
                       , memory
                       , chainblock
+                      , lens
                       , text
                       , warp
                       , wreq

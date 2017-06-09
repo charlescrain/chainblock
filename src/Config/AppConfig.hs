@@ -1,6 +1,7 @@
 module Config.AppConfig
   ( AppConfig(..)
   , getAppConfig
+  , Environment (..)
   ) where
 
 import           Control.Monad.Error.Class (MonadError)
