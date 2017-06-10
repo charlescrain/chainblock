@@ -8,13 +8,13 @@ import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           System.Environment        (getEnv)
 
-import           ChainBlock.Interfaces
+import           ChainBlock.API.Interfaces
 import           Config.Environment
 
-data AppConfig m = AppConfig
+data AppConfig m m' = AppConfig
   { appEnv            :: Environment
   , appPort           :: Int
-  , appRouteInterface :: IRouteFunctions m
+  , appRouteInterface :: IRouteFunctions m m'
   } --deriving (Show)
 
 
@@ -23,8 +23,8 @@ data AppConfig m = AppConfig
 getAppConfig :: ( MonadIO m
                 --, MonadError e m
                 )
-             => IRouteFunctions m
-             -> IO (AppConfig m)
+             => IRouteFunctions m m'
+             -> IO (AppConfig m m')
 getAppConfig irf = do
   env <- read <$> getEnv "ENV"
   port <- read <$> getEnv "PORT"

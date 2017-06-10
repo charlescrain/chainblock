@@ -1,13 +1,15 @@
 {-# LANGUAGE TypeOperators #-}
 
-module ChainBlock.DB where
+module ChainBlock.Business where
 
 import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Reader      (MonadReader, ReaderT, runReaderT)
+import           Servant                   (Handler, ServantErr)
 
+import           ChainBlock.API.Interfaces
 import           ChainBlock.DB.Interfaces
 
 
-databaseInterface :: IDataBase IO IO
-databaseInterface = undefined
+routeInterface :: IRouteFunctions IO Handler
+routeInterface = undefined

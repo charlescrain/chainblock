@@ -58,6 +58,7 @@ data WebsiteDetails =
   WebsiteDetails { webURL      :: WebsiteURL
                  , websiteName :: Text
                  , websiteId   :: WebsiteId
+                 , userId      :: UserId
                  }
   deriving (Show, Eq, Ord, Generic)
 instance ToJSON WebsiteDetails
