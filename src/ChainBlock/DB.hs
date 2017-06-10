@@ -7,8 +7,8 @@ import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Reader      (MonadReader, ReaderT, runReaderT)
 import           Servant                   (Handler, ServantErr)
 
-import           ChainBlock.Interfaces
+import           ChainBlock.API.Interfaces
 
 
-routeInterface :: IRouteFunctions IO
+routeInterface :: IRouteFunctions IO Handler
 routeInterface = undefined

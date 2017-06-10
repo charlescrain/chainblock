@@ -8,8 +8,8 @@ import           Servant
 
 import           App.Transformer             (AppT)
 import           ChainBlock.API.ContentTypes
+import           ChainBlock.API.Interfaces
 import           ChainBlock.API.Types
-import           ChainBlock.Interfaces
 
 type API = "v0" :> UserSubRouteAPI
 

@@ -1,13 +1,13 @@
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE RankNTypes     #-}
 {-# LANGUAGE TypeOperators  #-}
-module ChainBlock.Interfaces where
+module ChainBlock.API.Interfaces where
 
 
 import           ChainBlock.API.Types
 import           Servant              (Handler, ServantErr)
 
-data IRouteFunctions m =
+data IRouteFunctions m m' =
   IRouteFunctions { getUsers :: m [User]
                   , postUser :: PostUserBody -> m UserId
                   , getWebsites :: UserId -> m [WebsiteDetails]
@@ -16,7 +16,7 @@ data IRouteFunctions m =
                                           -> PostMasterKey
                                           -> m Website
                   , postWebsites :: UserId -> PostMasterKey -> m WebsiteId
-                  , runRouteInterface :: forall a . m a -> Handler a
+                  , runRouteInterface :: forall a . m a -> m' a
                   }
 
 

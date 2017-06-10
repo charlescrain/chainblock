@@ -40,6 +40,8 @@ apiSpec =
         True `shouldBe` True
       it "should call GET /users/:userId/websites and return a list of website details" $ \port -> do
         pendingWith "Underconstruction"
+        let user = toJSON . PostUserBody $ (Username "Sabriel")
+        resp <- get "/users" port
         True `shouldBe` True
       it "should call POST /users/:userId/websites and return a new websiteId" $ \port -> do
         pendingWith "Underconstruction"
@@ -49,6 +51,15 @@ apiSpec =
         True `shouldBe` True
 
 routePrefix = "/api/v0"
+
+------------------------------------------------------------------------------
+--Spec Fixtures
+------------------------------------------------------------------------------
+
+
+------------------------------------------------------------------------------
+--Spec Utils
+------------------------------------------------------------------------------
 
 options = defaults {headers=[("Accept","application/vnd.api+json")]}
 
