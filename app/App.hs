@@ -17,7 +17,6 @@ import           Servant
 
 import           API
 import           App.Transformer
-import           ChainBlock.DB
 import           Config.AppConfig                     (AppConfig (..),
                                                        getAppConfig)
 import           Server                               (server)

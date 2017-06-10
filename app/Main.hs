@@ -15,7 +15,7 @@ import           API
 import           App                                  (AppConfig (..), app,
                                                        getAppConfig)
 import           App.Transformer                      (AppT)
-import           ChainBlock.DB
+import           ChainBlock.Business
 import           Server                               (server)
 
 main :: IO ()

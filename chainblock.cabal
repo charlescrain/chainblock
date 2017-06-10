@@ -38,6 +38,7 @@ library
                       , ChainBlock.API.Types
                       , ChainBlock.API.ContentTypes
                       , ChainBlock.API.Interfaces
+                      , ChainBlock.Business
                       , ChainBlock.DB
                       , ChainBlock.DB.Interfaces
   default-language:     Haskell2010
