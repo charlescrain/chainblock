@@ -49,6 +49,8 @@ library
                       , binary
                       , bytestring
                       , cryptonite
+                      , opaleye
+                      , product-profunctors
                       , http-media
                       , http-api-data
                       , memory
