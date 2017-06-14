@@ -20,6 +20,7 @@ import           Server                               (server)
 
 main :: IO ()
 main = do
-  cfg <- getAppConfig routeInterface
+  routeInterface' <- routeInterface
+  cfg <- getAppConfig routeInterface'
   run (appPort cfg) (app cfg)
 

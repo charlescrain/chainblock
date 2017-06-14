@@ -11,5 +11,5 @@ import           ChainBlock.API.Interfaces
 import           ChainBlock.DB.Interfaces
 
 
-routeInterface :: IRouteFunctions IO Handler
+routeInterface :: IO (IRouteFunctions IO Handler)
 routeInterface = undefined
