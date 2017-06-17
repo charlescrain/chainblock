@@ -10,6 +10,8 @@ import           Control.Monad                    (void)
 import           Database.PostgreSQL.Simple
 import           Database.PostgreSQL.Simple.SqlQQ
 
+import           ChainBlock.DB.Tables
+
 createTables :: Connection -> IO ()
 createTables conn = do
   _ <- begin conn
@@ -37,30 +39,5 @@ createDBIfNeeded conn = do
         putStrLn "Creating Database chainblock"
         void $ execute_ conn [sql| CREATE DATABASE chainblock; |]
 
-createUserTable :: Query
-createUserTable = [sql|
-  CREATE TABLE IF NOT EXISTS users (
-      id                 serial PRIMARY KEY NOT NULL UNIQUE,
-      username           text NOT NULL UNIQUE
-  );
-  |]
 
-createWebsiteTable :: Query
-createWebsiteTable = [sql|
-  CREATE TABLE IF NOT EXISTS websites (
-    id              serial PRIMARY KEY  NOT NULL UNIQUE,
-    website_url     text  NOT NULL,
-    website_name    text  NOT NULL,
-    user_id         integer REFERENCES users(id) NOT NULL
-  );
-  |]
-
-createCredentialsTable :: Query
-createCredentialsTable = [sql|
-  CREATE TABLE IF NOT EXISTS credentials (
-    username     text  NOT NULL,
-    password     bytea  NOT NULL,
-    website_id   integer REFERENCES websites(id) NOT NULL
-  );
-  |]
 
