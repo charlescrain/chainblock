@@ -23,15 +23,16 @@ createTables conn = do
                      , createWebsiteTable
                      ]
 
-createDBIfNeeded :: Connection -> IO ()
-createDBIfNeeded conn = do
+createDBIfNeeded :: Connection -> String -> IO ()
+createDBIfNeeded conn dbName = do
     dbExists' <- dbExists
     if dbExists' then return ()
     else createDB
     where
       dbExists = do
-        mDBCount <- query_ conn
-          [sql| SELECT COUNT(*) FROM pg_database WHERE datname = 'chainblock'; |]
+        mDBCount <- query conn
+          [sql| SELECT COUNT(*) FROM pg_database WHERE datname = '?'; |]
+          [dbName]
         case mDBCount of
           [Only (1 :: Integer)] -> return False
           _                     -> return True

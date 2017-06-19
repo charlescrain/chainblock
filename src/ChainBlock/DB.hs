@@ -3,55 +3,72 @@
 
 module ChainBlock.DB where
 
-import           Control.Monad.Error.Class (MonadError)
-import           Control.Monad.IO.Class    (MonadIO)
-import           Control.Monad.Reader      (MonadReader, ReaderT, runReaderT)
+import           Control.Monad.Error.Class  (MonadError)
+import           Control.Monad.IO.Class     (MonadIO)
+import           Control.Monad.Reader       (MonadReader, ReaderT, runReaderT)
+import           Data.ByteString.Lazy       (toStrict)
+import           Data.ByteString.Lazy.UTF8  (fromString)
+import           Database.PostgreSQL.Simple
+import           System.Environment         (getEnv)
 
 import           ChainBlock.DB.Interfaces
-import           ChainBlock.DB.Setup       (createDBIfNeeded)
+import           ChainBlock.DB.Setup        (createDBIfNeeded)
 import           ChainBlock.DB.Types
+
+-- type MonadDB =
 
 databaseInterface :: IO (IDataBase IO IO)
 databaseInterface = do
--- TODO: Discover Types for these functions
---   dbEnv <- getDBEnv
---   conn <- buildConnection dbEnv
---   _ <- createDBIfNeeded conn
-  return IDataBase { queryAllUsers = queryAllUsers'
-                   , queryUser = queryUser'
-                   , insertUser = insertUser'
-                   , queryWebsite = queryWebsite'
-                   , queryWebsiteCredentials = queryWebsiteCredentials'
-                   , runDBInterface = runDBInterface'
+  connInfo <- buildConnectInfo
+  conn <- connect connInfo
+  let dbName = connectDatabase connInfo
+  _ <- createDBIfNeeded conn dbName
+  return IDataBase { queryAllUsers           = queryAllUsers' conn
+                   , queryUser               = queryUser' conn
+                   , insertUser              = insertUser' conn
+                   , queryWebsite            = queryWebsite' conn
+                   , queryWebsiteCredentials = queryWebsiteCredentials' conn
+                   , runDBInterface          = runDBInterface'
                    }
-queryAllUsers' :: IO [User]
+
+-----------------------------------------------------
+-- | Interface Implementation
+-----------------------------------------------------
+
+queryAllUsers' :: Connection -> IO [User]
 queryAllUsers' =  undefined
 
-queryUser' :: UserId -> IO User
+queryUser' :: Connection -> UserId -> IO User
 queryUser' = undefined
 
-insertUser' ::  Username -> IO UserId
+insertUser' ::  Connection -> Username -> IO UserId
 insertUser' = undefined
 
-queryWebsite' :: UserId -> IO [Website]
+queryWebsite' :: Connection -> UserId -> IO [Website]
 queryWebsite' = undefined
 
-queryWebsiteCredentials' :: UserId -> WebsiteId -> IO [WebsiteCredentials]
+queryWebsiteCredentials' :: Connection -> UserId -> WebsiteId -> IO [WebsiteCredentials]
 queryWebsiteCredentials' = undefined
 
 runDBInterface' :: IO a -> IO a
 runDBInterface' = undefined
 
-
--- TODO: Discover Types for these functions
--- getDBEnv :: IO String
--- getDBEnv = undefined
---
--- buildConnection ::
--- buildConnection dbEnv = undefined
---
--- createDBIfNeeded ::
--- createDBIfNeeded conn = undefined
+-----------------------------------------------------
+-- | Helper Funcitons
+-----------------------------------------------------
 
 
+buildConnectInfo :: IO ConnectInfo
+buildConnectInfo  = do
+  host       <- getEnv "PG_HOST"
+  port       <- getEnv "PG_PORT"
+  dbName     <- getEnv "PG_DBNAME"
+  dbUser     <- getEnv "PG_DBUSER"
+  dbPassword <- getEnv "PG_DBPASSWORD"
+  return $ ConnectInfo { connectHost = host
+                       , connectPort = read port
+                       , connectUser = dbUser
+                       , connectPassword = dbPassword
+                       , connectDatabase = dbName
+                       }
 

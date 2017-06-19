@@ -25,6 +25,10 @@ businessInterface = do
                             , runBusinessInterface = runRouteInterface'
                             }
 
+-----------------------------------------------------
+-- | Interface Implementation
+-----------------------------------------------------
+
 getUsers' :: IO [User]
 getUsers' = undefined
 

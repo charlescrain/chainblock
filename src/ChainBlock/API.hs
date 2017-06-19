@@ -25,6 +25,10 @@ routeInterface = do
                          , runRouteInterface = runRouteInterface'
                          }
 
+-----------------------------------------------------
+-- | Interface Implementation
+-----------------------------------------------------
+
 getUsers' :: IO [User]
 getUsers' = undefined
 

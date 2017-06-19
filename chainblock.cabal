@@ -49,6 +49,7 @@ library
                       , base16-bytestring
                       , binary
                       , bytestring
+                      , utf8-string
                       , cryptonite
                       , opaleye
                       , postgresql-simple
