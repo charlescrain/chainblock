@@ -1,5 +1,6 @@
-{-# LANGUAGE RankNTypes    #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE Arrows              #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators       #-}
 
 module ChainBlock.DB where
 
@@ -8,11 +9,15 @@ import           Control.Monad.IO.Class     (MonadIO)
 import           Control.Monad.Reader       (MonadReader, ReaderT, runReaderT)
 import           Data.ByteString.Lazy       (toStrict)
 import           Data.ByteString.Lazy.UTF8  (fromString)
+import           Data.Text
 import           Database.PostgreSQL.Simple
+import           Opaleye.Manipulation       (runInsertManyReturning)
+import qualified Opaleye.PGTypes            as P
 import           System.Environment         (getEnv)
 
 import           ChainBlock.DB.Interfaces
 import           ChainBlock.DB.Setup        (createDBIfNeeded)
+import           ChainBlock.DB.Tables
 import           ChainBlock.DB.Types
 
 -- type MonadDB =
@@ -42,7 +47,11 @@ queryUser' :: Connection -> UserId -> IO User
 queryUser' = undefined
 
 insertUser' ::  Connection -> Username -> IO UserId
-insertUser' = undefined
+insertUser' conn un = do
+  let insertFields = [(Nothing, P.pgStrictText . unUsername $ un)]
+  [(id :: Int, _ :: Text)] <- runInsertManyReturning conn userTable insertFields id
+  return $ UserId . toInteger . fromIntegral $ id
+
 
 queryWebsite' :: Connection -> UserId -> IO [Website]
 queryWebsite' = undefined

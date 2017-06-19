@@ -16,7 +16,7 @@ data User =
   deriving (Show, Eq, Generic)
 
 
-newtype UserId = UserId {unUserId :: Text}
+newtype UserId = UserId {unUserId :: Integer}
   deriving (Show, Eq, Ord, Generic)
 
 newtype Username = Username {unUsername :: Text}
