@@ -35,6 +35,7 @@ library
                       , ChainBlock.Crypto.Types
                       , Config.AppConfig
                       , Config.Environment
+                      , ChainBlock.API
                       , ChainBlock.API.Types
                       , ChainBlock.API.ContentTypes
                       , ChainBlock.API.Interfaces
