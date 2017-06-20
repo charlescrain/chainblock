@@ -2,21 +2,21 @@
 
 module API.V0Spec (main, spec) where
 
-import           Control.Lens.Lens        ((&))
-import           Data.Aeson               (toJSON)
-import           Data.ByteString.Base16   (decode, encode)
-import           Data.Monoid              ((<>))
-import           Data.Text                (Text)
-import           Network.Wai.Handler.Warp (testWithApplication)
-import           Network.Wreq             (Response, defaults, getWith,
-                                           postWith, responseBody)
-import           Network.Wreq.Types       (Options (..))
+import           Control.Lens.Lens         ((&))
+import           Data.Aeson                (toJSON)
+import           Data.ByteString.Base16    (decode, encode)
+import           Data.Monoid               ((<>))
+import           Data.Text                 (Text)
+import           Network.Wai.Handler.Warp  (testWithApplication)
+import           Network.Wreq              (Response, defaults, getWith,
+                                            postWith, responseBody)
+import           Network.Wreq.Types        (Options (..))
 import           Test.Hspec
 
 import           App
+import           ChainBlock.API.Interfaces
 import           ChainBlock.API.Types
 import           ChainBlock.Crypto
-import           ChainBlock.Interfaces
 import           Config.Environment
 
 main :: IO ()
@@ -69,8 +69,8 @@ get r p = getWith options (buildUrl r p)
 
 post r p = postWith options (buildUrl r p)
 
-mkAppConfig :: IO (AppConfig IO)
+mkAppConfig :: IO (AppConfig IO IO)
 mkAppConfig = return $ AppConfig Test 8000 irf
 
-irf :: IRouteFunctions IO
+irf :: IRouteFunctions IO IO
 irf = undefined

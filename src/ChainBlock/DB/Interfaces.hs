@@ -1,19 +1,29 @@
-{-# LANGUAGE ExplicitForAll #-}
-{-# LANGUAGE RankNTypes     #-}
-{-# LANGUAGE TypeOperators  #-}
+{-# LANGUAGE ExplicitForAll        #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE RankNTypes            #-}
+{-# LANGUAGE TypeOperators         #-}
 module ChainBlock.DB.Interfaces where
 
+import           Control.Monad.Error.Class (MonadError)
+import           Control.Monad.IO.Class    (MonadIO)
+import           Servant                   (Handler, ServantErr)
 
 import           ChainBlock.DB.Types
-import           Servant             (Handler, ServantErr)
+import           ChainBlock.Errors         (CBErrors (..))
 
--- TODO: Need to complete this interface
-data IDataBase m m' =
-  IDataBase { queryAllUsers :: m [User]
-            , queryUser :: UserId -> m User
-            , insertUser :: Username -> m UserId
-            , queryWebsite :: UserId -> m [Website]
-            , queryWebsiteCredentials :: UserId
+
+class (MonadError CBErrors m, MonadIO m) => DBMonad m
+
+
+
+data IDataBase m m'  =
+  IDataBase { queryAllUsers :: (DBMonad m) => m [User]
+            , queryUser     :: (DBMonad m) => UserId -> m User
+            , insertUser :: (DBMonad m) => Username -> m UserId
+            , queryWebsite :: (DBMonad m) => UserId -> m [Website]
+            , queryWebsiteCredentials :: (DBMonad m)
+                                      => UserId
                                       -> WebsiteId
                                       -> m [WebsiteCredentials]
             , runDBInterface :: forall a . m a -> m' a
