@@ -19,8 +19,11 @@ executable chainblock
   default-language:     Haskell2010
   build-depends:        base >= 4.7 && < 5
                       , aeson
+                      , attoparsec
+                      , bytestring
                       , chainblock
                       , mtl
+                      , http-media
                       , servant-server
                       , text
                       , wai
@@ -37,7 +40,6 @@ library
                       , Config.Environment
                       , ChainBlock.API
                       , ChainBlock.API.Types
-                      , ChainBlock.API.ContentTypes
                       , ChainBlock.API.Interfaces
                       , ChainBlock.Business
                       , ChainBlock.DB
@@ -50,7 +52,6 @@ library
   default-language:     Haskell2010
   build-depends:        base >= 4.7 && < 5
                       , aeson
-                      , attoparsec
                       , base16-bytestring
                       , binary
                       , bytestring
@@ -59,7 +60,6 @@ library
                       , opaleye
                       , postgresql-simple
                       , product-profunctors
-                      , http-media
                       , http-api-data
                       , memory
                       , mtl

@@ -10,9 +10,9 @@ module Server.V0
 
 import           Servant
 
+import           API.ContentTypes
 import           API.V0
-import           App.Transformer             (AppT)
-import           ChainBlock.API.ContentTypes
+import           App.Transformer           (AppT)
 import           ChainBlock.API.Interfaces
 import           ChainBlock.API.Types
 

@@ -14,6 +14,7 @@ import           ChainBlock.Errors         (CBErrors (..))
 
 
 class (MonadError CBErrors m, MonadIO m) => DBMonad m
+-- type DBMonad m = (MonadError CBErrors m, MonadIO m) => m
 
 
 

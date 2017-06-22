@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 
-module ChainBlock.API.ContentTypes where
+module API.ContentTypes where
 
 import           Data.Aeson
 import           Data.Aeson.Parser

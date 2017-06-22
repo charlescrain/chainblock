@@ -4,8 +4,8 @@
 module ChainBlock.Business.Interfaces where
 
 
-import           ChainBlock.API.Types
-import           Servant              (Handler, ServantErr)
+import           ChainBlock.Business.Types
+
 
 data IBusinessFunctions m m' =
   IBusinessFunctions { getUsers :: m [User]

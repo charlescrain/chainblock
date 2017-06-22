@@ -6,8 +6,8 @@ module API.V0 where
 
 import           Servant
 
-import           App.Transformer             (AppT)
-import           ChainBlock.API.ContentTypes
+import           API.ContentTypes
+import           App.Transformer           (AppT)
 import           ChainBlock.API.Interfaces
 import           ChainBlock.API.Types
 
