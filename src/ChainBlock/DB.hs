@@ -1,15 +1,20 @@
 {-# LANGUAGE Arrows              #-}
 {-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
 module ChainBlock.DB where
 
+import           Control.Monad.Catch        (throwM)
+import           Control.Monad.Except       (throwError)
 import           Control.Monad.IO.Class     (liftIO)
 import           Data.ByteString.Lazy       (toStrict)
 import           Data.ByteString.Lazy.UTF8  (fromString)
-import           Data.Text
+import           Data.Monoid                ((<>))
+import           Data.Text                  hiding (length)
+
 import           Database.PostgreSQL.Simple (ConnectInfo (..), Connection,
                                              connect)
 import           Opaleye.Column             (Column)
@@ -24,7 +29,7 @@ import           ChainBlock.DB.Interfaces
 import           ChainBlock.DB.Setup        (createDBIfNeeded)
 import           ChainBlock.DB.Tables
 import           ChainBlock.DB.Types
-import           ChainBlock.Errors          (CBErrors (..))
+import           ChainBlock.Errors
 
 
 databaseInterface :: (forall a . PGDB a -> m a )
@@ -49,6 +54,9 @@ databaseInterface runDBInterface' = do
 runDBInterfaceBZ :: PGDB a -> BZ a
 runDBInterfaceBZ = undefined
 
+runDBInterfaceIO :: PGDB a -> IO a
+runDBInterfaceIO = undefined
+
 -----------------------------------------------------
 -- | Interface Implementation
 -----------------------------------------------------
@@ -57,20 +65,24 @@ queryAllUsers' :: Connection -> PGDB [User]
 queryAllUsers' =  undefined
 
 queryUser' :: Connection -> Username -> PGDB User
-queryUser' = undefined
--- queryUser' conn un = do
---   rows <- runQuery conn queryUserByName
---   case length rows of
---     0 -> throw
---
---   if length rows \= 1
---     then
---   return $ User
---             (UserId . toInteger . fromIntegral $ uId)
---             (Username un)
---   where
---     queryUserByName :: Query (Column P.PGInt4, Column P.PGText)
---     queryUserByName = undefined
+-- queryUser' = undefined
+queryUser' conn un = do
+  rows <- liftIO $ runQuery conn queryUserByName
+  case rows of
+    [(uId :: Int, uName :: Text)] -> return $ User
+                    (Username uName)
+                    (UserId . toInteger . fromIntegral $ uId)
+    [] -> throwError $ DatabaseError
+           "queryUser'"
+           ("0 rows found for username" <> unUsername un)
+           NoResults
+    _ -> throwM $ DatabaseEx
+             "queryUser'"
+             ("found multiple rows for username " <> unUsername un)
+             NotUnique
+  where
+    queryUserByName :: Query (Column P.PGInt4, Column P.PGText)
+    queryUserByName = undefined
 
 insertUser' ::  Connection -> Username -> PGDB UserId
 insertUser' conn un = do

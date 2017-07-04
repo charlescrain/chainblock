@@ -22,8 +22,8 @@ executable chainblock
                       , attoparsec
                       , bytestring
                       , chainblock
-                      , mtl
                       , http-media
+                      , mtl
                       , servant-server
                       , text
                       , wai
@@ -35,19 +35,19 @@ executable chainblock
 library
   hs-source-dirs:       src
   exposed-modules:      ChainBlock.Crypto
-                      , ChainBlock.Crypto.Types
-                      , Config.AppConfig
-                      , Config.Environment
                       , ChainBlock.API.Types
                       , ChainBlock.Business
-                      , ChainBlock.Business.Types
                       , ChainBlock.Business.Interfaces
+                      , ChainBlock.Business.Types
+                      , ChainBlock.Crypto.Types
                       , ChainBlock.DB
                       , ChainBlock.DB.Interfaces
-                      , ChainBlock.DB.Types
-                      , ChainBlock.DB.Tables
                       , ChainBlock.DB.Setup
+                      , ChainBlock.DB.Tables
+                      , ChainBlock.DB.Types
                       , ChainBlock.Errors
+                      , Config.AppConfig
+                      , Config.Environment
 
   default-language:     Haskell2010
   build-depends:        base >= 4.7 && < 5
@@ -55,17 +55,17 @@ library
                       , base16-bytestring
                       , binary
                       , bytestring
-                      , utf8-string
                       , cryptonite
                       , exceptions
-                      , opaleye
-                      , postgresql-simple
-                      , product-profunctors
                       , http-api-data
                       , memory
                       , mtl
+                      , opaleye
+                      , postgresql-simple
+                      , product-profunctors
                       , servant-server
                       , text
+                      , utf8-string
 
 test-suite              webapp-test
  type:                  exitcode-stdio-1.0
@@ -76,23 +76,25 @@ test-suite              webapp-test
 
  main-is: Spec.hs
 
- build-depends:         base
+ build-depends:         aeson
+                      , attoparsec
+                      , base
                       , base16-bytestring
                       , bytestring
-                      , aeson
+                      , chainblock
                       , cryptonite
                       , hspec
-                      , memory
-                      , chainblock
+                      , http-media
                       , lens
-                      , text
-                      , warp
-                      , wreq
+                      , memory
                       , mtl
                       , servant-server
+                      , text
                       , wai
                       , wai-cors
                       , wai-extra
+                      , warp
+                      , wreq
 
  ghc-options:         -Wall
                       -fwarn-unused-matches

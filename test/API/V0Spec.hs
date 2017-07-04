@@ -2,20 +2,20 @@
 
 module API.V0Spec (main, spec) where
 
-import           Control.Lens.Lens         ((&))
-import           Data.Aeson                (toJSON)
-import           Data.ByteString.Base16    (decode, encode)
-import           Data.Monoid               ((<>))
-import           Data.Text                 (Text)
-import           Network.Wai.Handler.Warp  (testWithApplication)
-import           Network.Wreq              (Response, defaults, getWith,
-                                            postWith, responseBody)
-import           Network.Wreq.Types        (Options (..))
+import           Control.Lens.Lens              ((&))
+import           Data.Aeson                     (toJSON)
+import           Data.ByteString.Base16         (decode, encode)
+import           Data.Monoid                    ((<>))
+import           Data.Text                      (Text)
+import           Network.Wai.Handler.Warp       (testWithApplication)
+import           Network.Wreq                   (Response, defaults, getWith,
+                                                 postWith, responseBody)
+import           Network.Wreq.Types             (Options (..))
 import           Test.Hspec
 
 import           App
-import           ChainBlock.API.Interfaces
 import           ChainBlock.API.Types
+import           ChainBlock.Business.Interfaces
 import           ChainBlock.Crypto
 import           Config.Environment
 
@@ -72,5 +72,5 @@ post r p = postWith options (buildUrl r p)
 mkAppConfig :: IO (AppConfig IO IO)
 mkAppConfig = return $ AppConfig Test 8000 irf
 
-irf :: IRouteFunctions IO IO
+irf :: IBusinessFunctions IO IO
 irf = undefined

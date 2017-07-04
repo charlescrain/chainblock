@@ -16,6 +16,7 @@ newtype PGDB a =
     deriving ( Functor, Applicative, Monad,
                MonadIO,
                MonadCatch,
+               MonadError CBErrors,
                MonadThrow
              )
 
