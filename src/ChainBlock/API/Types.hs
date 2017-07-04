@@ -34,7 +34,7 @@ newtype Username = Username {unUsername :: Text}
 instance ToJSON Username
 instance FromJSON Username
 
-newtype UserId = UserId {unUserId :: Text}
+newtype UserId = UserId {unUserId :: Integer}
   deriving (Show, Eq, Ord, Generic)
 instance ToJSON UserId
 instance FromJSON UserId

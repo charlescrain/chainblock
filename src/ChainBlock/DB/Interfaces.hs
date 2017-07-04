@@ -20,7 +20,7 @@ class (MonadError CBErrors m, MonadIO m) => DBMonad m
 
 data IDataBase m m'  =
   IDataBase { queryAllUsers :: (DBMonad m) => m [User]
-            , queryUser     :: (DBMonad m) => UserId -> m User
+            , queryUser     :: (DBMonad m) => Username -> m User
             , insertUser :: (DBMonad m) => Username -> m UserId
             , queryWebsite :: (DBMonad m) => UserId -> m [Website]
             , queryWebsiteCredentials :: (DBMonad m)

@@ -1,29 +1,35 @@
 {-# LANGUAGE Arrows              #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
 module ChainBlock.DB where
 
-import           Control.Monad.Error.Class  (MonadError)
-import           Control.Monad.IO.Class     (MonadIO)
-import           Control.Monad.Reader       (MonadReader, ReaderT, runReaderT)
+import           Control.Monad.IO.Class     (liftIO)
 import           Data.ByteString.Lazy       (toStrict)
 import           Data.ByteString.Lazy.UTF8  (fromString)
 import           Data.Text
-import           Database.PostgreSQL.Simple
+import           Database.PostgreSQL.Simple (ConnectInfo (..), Connection,
+                                             connect)
+import           Opaleye.Column             (Column)
 import           Opaleye.Manipulation       (runInsertManyReturning)
 import qualified Opaleye.PGTypes            as P
+import           Opaleye.QueryArr           (Query)
+import           Opaleye.RunQuery           (runQuery)
 import           System.Environment         (getEnv)
 
+import           ChainBlock.Business.Types  (BZ)
 import           ChainBlock.DB.Interfaces
 import           ChainBlock.DB.Setup        (createDBIfNeeded)
 import           ChainBlock.DB.Tables
 import           ChainBlock.DB.Types
+import           ChainBlock.Errors          (CBErrors (..))
 
--- type MonadDB =
 
-databaseInterface :: IO (IDataBase IO IO)
-databaseInterface = do
+databaseInterface :: (forall a . PGDB a -> m a )
+                  -> IO (IDataBase PGDB m)
+databaseInterface runDBInterface' = do
   connInfo <- buildConnectInfo
   conn <- connect connInfo
   let dbName = connectDatabase connInfo
@@ -37,30 +43,48 @@ databaseInterface = do
                    }
 
 -----------------------------------------------------
+-- | runDBInterface Functions
+-----------------------------------------------------
+
+runDBInterfaceIO' :: PGDB a -> BZ a
+runDBInterfaceIO' = undefined
+
+-----------------------------------------------------
 -- | Interface Implementation
 -----------------------------------------------------
 
-queryAllUsers' :: Connection -> IO [User]
+queryAllUsers' :: Connection -> PGDB [User]
 queryAllUsers' =  undefined
 
-queryUser' :: Connection -> UserId -> IO User
+queryUser' :: Connection -> Username -> PGDB User
 queryUser' = undefined
+-- queryUser' conn un = do
+--   rows <- runQuery conn queryUserByName
+--   case length rows of
+--     0 -> throw
+--
+--   if length rows \= 1
+--     then
+--   return $ User
+--             (UserId . toInteger . fromIntegral $ uId)
+--             (Username un)
+--   where
+--     queryUserByName :: Query (Column P.PGInt4, Column P.PGText)
+--     queryUserByName = undefined
 
-insertUser' ::  Connection -> Username -> IO UserId
+insertUser' ::  Connection -> Username -> PGDB UserId
 insertUser' conn un = do
   let insertFields = [(Nothing, P.pgStrictText . unUsername $ un)]
-  [(id :: Int, _ :: Text)] <- runInsertManyReturning conn userTable insertFields id
+  [(id :: Int, _ :: Text)] <- liftIO $ runInsertManyReturning conn userTable insertFields id
   return $ UserId . toInteger . fromIntegral $ id
 
 
-queryWebsite' :: Connection -> UserId -> IO [Website]
+queryWebsite' :: Connection -> UserId -> PGDB [Website]
 queryWebsite' = undefined
 
-queryWebsiteCredentials' :: Connection -> UserId -> WebsiteId -> IO [WebsiteCredentials]
+queryWebsiteCredentials' :: Connection -> UserId -> WebsiteId -> PGDB [WebsiteCredentials]
 queryWebsiteCredentials' = undefined
 
-runDBInterface' :: IO a -> IO a
-runDBInterface' = undefined
 
 -----------------------------------------------------
 -- | Helper Funcitons

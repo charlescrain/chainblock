@@ -1,4 +1,6 @@
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators       #-}
 
 module ChainBlock.Business where
 
@@ -9,44 +11,49 @@ import           Control.Monad.Reader           (MonadReader, ReaderT,
 
 import           ChainBlock.Business.Interfaces
 import           ChainBlock.Business.Types
-import           ChainBlock.DB
 import           ChainBlock.DB.Interfaces
 
 
+businessInterface :: (IDataBase dbMonad BZ)
+                  -> (forall a . BZ a -> m a )
+                  -> IO (IBusinessFunctions BZ m)
+businessInterface _ runBusinessInterface' = do
+  return
+    IBusinessFunctions { getUsers = getUsers'
+                       , postUser = postUser'
+                       , getWebsites = getWebsites'
+                       , getWebsiteCredentials  = getWebsiteCredentials'
+                       , postWebsites = postWebsites'
+                       , runBusinessInterface = runBusinessInterface'
+                       }
 
-businessInterface :: IO (IBusinessFunctions IO IO)
-businessInterface = do
-  _dbInterface <- databaseInterface
-  return IBusinessFunctions { getUsers = getUsers'
-                            , postUser = postUser'
-                            , getWebsites = getWebsites'
-                            , getWebsiteCredentials  = getWebsiteCredentials'
-                            , postWebsites = postWebsites'
-                            , runBusinessInterface = runRouteInterface'
-                            }
+-----------------------------------------------------
+-- | runBusinessInterface Functions
+-----------------------------------------------------
+
+runBusinessInterfaceIO :: BZ a -> IO a
+runBusinessInterfaceIO = undefined
 
 -----------------------------------------------------
 -- | Interface Implementation
 -----------------------------------------------------
 
-getUsers' :: IO [User]
+getUsers' :: BZ [User]
 getUsers' = undefined
 
-postUser' :: PostUserBody -> IO UserId
+postUser' :: PostUserBody -> BZ UserId
 postUser' = undefined
 
-getWebsites' :: UserId -> IO [WebsiteDetails]
+getWebsites' :: UserId -> BZ [WebsiteDetails]
 getWebsites' = undefined
 
 getWebsiteCredentials' :: UserId
                        -> WebsiteId
                        -> PostMasterKey
-                       -> IO Website
+                       -> BZ Website
 getWebsiteCredentials' = undefined
 
-postWebsites' :: UserId -> PostMasterKey -> IO WebsiteId
+postWebsites' :: UserId -> PostMasterKey -> BZ WebsiteId
 postWebsites' = undefined
 
-runRouteInterface' :: IO a -> IO a
-runRouteInterface' = undefined
 

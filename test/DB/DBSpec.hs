@@ -19,7 +19,7 @@ dbSpec :: Spec
 dbSpec =
     describe "DB Spec" $ do
       _dbi <- runIO databaseInterface
-      it "should insert a User" $ do
+      it "should create a user and query the user" $ do
         pendingWith "Underconstruction"
 
 
