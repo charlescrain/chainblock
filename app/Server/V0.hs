@@ -12,8 +12,7 @@ import           Servant
 
 import           API.ContentTypes
 import           API.V0
-import           App.Transformer           (AppT)
-import           ChainBlock.API.Interfaces
+import           App.Transformer      (AppT)
 import           ChainBlock.API.Types
 
 

@@ -8,16 +8,17 @@ import           Control.Monad.Error.Class      (MonadError)
 import           Control.Monad.IO.Class         (MonadIO)
 import           Control.Monad.Reader           (MonadReader, ReaderT,
                                                  runReaderT)
+import           Servant                        (Handler)
 
 import           ChainBlock.Business.Interfaces
 import           ChainBlock.Business.Types
 import           ChainBlock.DB.Interfaces
 
 
-businessInterface :: (IDataBase dbMonad BZ)
-                  -> (forall a . BZ a -> m a )
+businessInterface :: (forall a . BZ a -> m a )
+                  -> (IDataBase dbMonad BZ)
                   -> IO (IBusinessFunctions BZ m)
-businessInterface _ runBusinessInterface' = do
+businessInterface runBusinessInterface' _ = do
   return
     IBusinessFunctions { getUsers = getUsers'
                        , postUser = postUser'
@@ -33,6 +34,9 @@ businessInterface _ runBusinessInterface' = do
 
 runBusinessInterfaceIO :: BZ a -> IO a
 runBusinessInterfaceIO = undefined
+
+runBusinessInterfaceHandler :: BZ a -> Handler a
+runBusinessInterfaceHandler = undefined
 
 -----------------------------------------------------
 -- | Interface Implementation

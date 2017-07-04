@@ -4,17 +4,17 @@ module Config.AppConfig
   , Environment (..)
   ) where
 
-import           Control.Monad.Error.Class (MonadError)
-import           Control.Monad.IO.Class    (MonadIO)
-import           System.Environment        (getEnv)
+import           Control.Monad.Error.Class      (MonadError)
+import           Control.Monad.IO.Class         (MonadIO)
+import           System.Environment             (getEnv)
 
-import           ChainBlock.API.Interfaces
+import           ChainBlock.Business.Interfaces
 import           Config.Environment
 
 data AppConfig m m' = AppConfig
   { appEnv            :: Environment
   , appPort           :: Int
-  , appRouteInterface :: IRouteFunctions m m'
+  , appRouteInterface :: IBusinessFunctions m m'
   } --deriving (Show)
 
 
@@ -23,7 +23,7 @@ data AppConfig m m' = AppConfig
 getAppConfig :: ( MonadIO m
                 --, MonadError e m
                 )
-             => IRouteFunctions m m'
+             => IBusinessFunctions m m'
              -> IO (AppConfig m m')
 getAppConfig irf = do
   env <- read <$> getEnv "ENV"

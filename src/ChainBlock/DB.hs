@@ -46,8 +46,8 @@ databaseInterface runDBInterface' = do
 -- | runDBInterface Functions
 -----------------------------------------------------
 
-runDBInterfaceIO' :: PGDB a -> BZ a
-runDBInterfaceIO' = undefined
+runDBInterfaceBZ :: PGDB a -> BZ a
+runDBInterfaceBZ = undefined
 
 -----------------------------------------------------
 -- | Interface Implementation

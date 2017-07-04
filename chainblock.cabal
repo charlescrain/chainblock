@@ -38,10 +38,10 @@ library
                       , ChainBlock.Crypto.Types
                       , Config.AppConfig
                       , Config.Environment
-                      , ChainBlock.API
                       , ChainBlock.API.Types
-                      , ChainBlock.API.Interfaces
                       , ChainBlock.Business
+                      , ChainBlock.Business.Types
+                      , ChainBlock.Business.Interfaces
                       , ChainBlock.DB
                       , ChainBlock.DB.Interfaces
                       , ChainBlock.DB.Types

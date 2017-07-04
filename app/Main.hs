@@ -15,12 +15,15 @@ import           API
 import           App                                  (AppConfig (..), app,
                                                        getAppConfig)
 import           App.Transformer                      (AppT)
-import           ChainBlock.API
+import           ChainBlock.Business
+import           ChainBlock.DB
 import           Server                               (server)
 
 main :: IO ()
 main = do
-  routeInterface' <- routeInterface
-  cfg <- getAppConfig routeInterface'
+  dbInterface <- databaseInterface runDBInterfaceBZ
+  bizInterface' <-
+    businessInterface runBusinessInterfaceHandler dbInterface
+  cfg <- getAppConfig bizInterface'
   run (appPort cfg) (app cfg)
 
