@@ -31,10 +31,19 @@ createTables conn = do
                      , createCredentialsTable
                      ]
 
+dbExists :: Connection -> String -> IO Bool
+dbExists conn dbName = do
+  mDBCount <- query conn
+    [sql| SELECT COUNT(*) FROM pg_database WHERE datname = ?; |]
+    [dbName]
+  case mDBCount of
+    [Only (1 :: Integer)] -> return True
+    _                     -> return False
+
 createDBIfNeeded :: ConnectInfo -> String -> IO ()
 createDBIfNeeded connInfo dbName = do
     conn <- connect connInfo {connectDatabase="postgres"}
-    dbExists' <- dbExists conn
+    dbExists' <- dbExists conn dbName
     if dbExists' then return ()
     else do
       void $ createDB conn
@@ -44,18 +53,21 @@ createDBIfNeeded connInfo dbName = do
       close conn'
       return ()
     where
-      dbExists conn = do
-        mDBCount <- query conn
-          [sql| SELECT COUNT(*) FROM pg_database WHERE datname = ?; |]
-          [dbName]
-        case mDBCount of
-          [Only (1 :: Integer)] -> return True
-          _                     -> return False
       createDB conn = do
         putStrLn $ "Creating Database " <> dbName
         void $ execute conn
                  [sql| CREATE DATABASE ?; |]
                  [Plain (fromLazyByteString . fromStrict . pack $ dbName)]
 
-
+dropDB :: ConnectInfo -> String -> IO ()
+dropDB connInfo dbName = do
+  conn <- connect connInfo {connectDatabase="postgres"}
+  dbExists' <- dbExists conn dbName
+  if not dbExists' then return ()
+  else do
+    conn' <- connect connInfo {connectDatabase=dbName}
+    putStrLn $ "Deleting Database " <> dbName
+    void $ execute conn'
+             [sql| DROP DATABASE ?; |]
+             [Plain (fromLazyByteString . fromStrict . pack $ dbName)]
 
