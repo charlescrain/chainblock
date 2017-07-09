@@ -34,18 +34,20 @@ executable chainblock
 
 library
   hs-source-dirs:       src
-  exposed-modules:      ChainBlock.Crypto
-                      , ChainBlock.API.Types
+  exposed-modules:      ChainBlock.API.Types
                       , ChainBlock.Business
                       , ChainBlock.Business.Interfaces
                       , ChainBlock.Business.Types
+                      , ChainBlock.Crypto
                       , ChainBlock.Crypto.Types
-                      , ChainBlock.DB
-                      , ChainBlock.DB.Interfaces
-                      , ChainBlock.DB.Setup
-                      , ChainBlock.DB.Tables
+                      , ChainBlock.DB.Interface
+                      , ChainBlock.DB.Postgres
+                      , ChainBlock.DB.Postgres.Setup
+                      , ChainBlock.DB.Postgres.Tables
+                      , ChainBlock.DB.Postgres.Types
                       , ChainBlock.DB.Types
                       , ChainBlock.Errors
+                      , ChainBlock.Logging
                       , Config.AppConfig
                       , Config.Environment
 
@@ -58,7 +60,10 @@ library
                       , cryptonite
                       , exceptions
                       , http-api-data
+                      , pretty
                       , memory
+                      , monad-logger
+                      , fast-logger
                       , mtl
                       , opaleye
                       , postgresql-simple

@@ -16,7 +16,7 @@ import           App                                  (AppConfig (..), app,
                                                        getAppConfig)
 import           App.Transformer                      (AppT)
 import           ChainBlock.Business
-import           ChainBlock.DB
+import           ChainBlock.DB.Postgres
 import           Server                               (server)
 
 main :: IO ()

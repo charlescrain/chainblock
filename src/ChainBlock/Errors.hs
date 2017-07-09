@@ -4,29 +4,30 @@ import           Control.Monad.Catch       (Exception (..), SomeException (..))
 import           Control.Monad.Error.Class (Error (..))
 import           Data.Text                 (Text)
 
-data CBErrors = DatabaseError Text Text DB_Errors
-              | BusinessError Text Text BZ_Errors
-              | APIError      Text Text API_Errors
-  deriving (Show, Eq)
-data DB_Errors  = NoResults
-  deriving (Show, Eq)
+data CBError = DatabaseError Text Text DB_Errors
+             | BusinessError Text Text BZ_Errors
+             | APIError      Text Text API_Errors
+             | Ex            SomeException
+  deriving (Show)
+data DB_Errors  = NoResults | DuplicateKeyViolation
+  deriving (Show)
 data BZ_Errors  = BZERROR
-  deriving (Show, Eq)
+  deriving (Show)
 data API_Errors = APIERROR
-  deriving (Show, Eq)
+  deriving (Show)
 
 -- instance Error CBErrors
 
 
-data CBExceptions = DatabaseEx Text Text DBException
-                  | BusinessEx Text Text BZException
-                  | APIEx      Text Text APIException
-  deriving (Show, Eq)
+data CBException = DatabaseEx Text Text DBException
+                 | BusinessEx Text Text BZException
+                 | APIEx      Text Text APIException
+  deriving (Show)
 data DBException = NotUnique
-  deriving (Show, Eq)
+  deriving (Show)
 data BZException = BZException
-  deriving (Show, Eq)
+  deriving (Show)
 data APIException = APIException
-  deriving (Show, Eq)
+  deriving (Show)
 
-instance Exception CBExceptions
+instance Exception CBException

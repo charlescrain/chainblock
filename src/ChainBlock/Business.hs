@@ -12,7 +12,7 @@ import           Servant                        (Handler)
 
 import           ChainBlock.Business.Interfaces
 import           ChainBlock.Business.Types
-import           ChainBlock.DB.Interfaces
+import           ChainBlock.DB.Interface
 
 
 businessInterface :: (forall a . BZ a -> m a )

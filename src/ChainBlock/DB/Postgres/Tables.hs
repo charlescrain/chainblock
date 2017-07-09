@@ -1,5 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
-module ChainBlock.DB.Tables where
+module ChainBlock.DB.Postgres.Tables where
 
 import           Data.Profunctor.Product          (p2, p3, p4)
 import           Database.PostgreSQL.Simple
@@ -16,13 +16,13 @@ import           Opaleye                          (Column, PGBytea, PGInt4,
 
 userTable :: Table (Maybe (Column PGInt4), Column PGText)
                      (Column PGInt4, Column PGText)
-userTable = Table "userTable" (p2 ( optional "id"
-                                   , required "name" ))
+userTable = Table "users" (p2 ( optional "id"
+                              , required "name" ))
 
 createUserTable :: Query
 createUserTable = [sql|
   CREATE TABLE IF NOT EXISTS users (
-      id                 serial PRIMARY KEY NOT NULL UNIQUE,
+      id             serial PRIMARY KEY NOT NULL UNIQUE,
       name           text NOT NULL UNIQUE
   );
   |]
@@ -33,7 +33,7 @@ createUserTable = [sql|
 
 credentialsTable :: Table (Column PGText, Column PGBytea, Column PGInt4)
                           (Column PGText, Column PGBytea, Column PGInt4)
-credentialsTable = Table "credentialsTable" (p3 ( required "username"
+credentialsTable = Table "credentials" (p3 ( required "username"
                                                 , required "encrypted_pass"
                                                 , required "website_id" ))
 createCredentialsTable :: Query
@@ -47,10 +47,10 @@ createCredentialsTable = [sql|
 
 websiteTable :: Table (Column PGInt4, Column PGText, Column PGText, Column PGInt4)
                       (Column PGInt4, Column PGText, Column PGText, Column PGInt4)
-websiteTable = Table "credentialsTable" (p4 ( required "id"
-                                            , required "website_url"
-                                            , required "website_name"
-                                            , required "user_id" ))
+websiteTable = Table "websites" (p4 ( required "id"
+                                    , required "website_url"
+                                    , required "website_name"
+                                    , required "user_id" ))
 
 createWebsiteTable :: Query
 createWebsiteTable = [sql|

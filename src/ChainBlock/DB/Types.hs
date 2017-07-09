@@ -3,22 +3,11 @@
 
 module ChainBlock.DB.Types where
 
-import           Control.Monad.Catch    (MonadCatch, MonadThrow)
-import           Control.Monad.Except   (ExceptT, MonadError)
-import           Control.Monad.IO.Class (MonadIO)
-import           Data.Text              (Text)
+import           Data.Text         (Text)
 import           GHC.Generics
 
 import           ChainBlock.Errors
 
-newtype PGDB a =
-  PGDB { runPGDB :: (ExceptT CBErrors IO) a}
-    deriving ( Functor, Applicative, Monad,
-               MonadIO,
-               MonadCatch,
-               MonadError CBErrors,
-               MonadThrow
-             )
 
 -----------------------------------------------------
 -- | User
