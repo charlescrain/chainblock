@@ -2,8 +2,9 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module ChainBlock.DB.Postgres.Setup
-  ( createTables,
-    createDBIfNeeded
+  ( createTables
+  , createDBIfNeeded
+  , dropDB
   ) where
 
 import           Control.Monad                      (void)
@@ -21,7 +22,6 @@ import           ChainBlock.DB.Postgres.Tables
 
 createTables :: Connection -> IO ()
 createTables conn = do
-  putStrLn "hmmm"
   _ <- begin conn
   _ <- mapM_ (execute_ conn) tableCreations
   commit conn
@@ -40,6 +40,7 @@ dbExists conn dbName = do
     [Only (1 :: Integer)] -> return True
     _                     -> return False
 
+-- TODO: Need to handle closing DBs.
 createDBIfNeeded :: ConnectInfo -> String -> IO ()
 createDBIfNeeded connInfo dbName = do
     conn <- connect connInfo {connectDatabase="postgres"}
@@ -59,15 +60,15 @@ createDBIfNeeded connInfo dbName = do
                  [sql| CREATE DATABASE ?; |]
                  [Plain (fromLazyByteString . fromStrict . pack $ dbName)]
 
-dropDB :: ConnectInfo -> String -> IO ()
-dropDB connInfo dbName = do
+dropDB :: ConnectInfo -> IO ()
+dropDB connInfo = do
+  let dbName = connectDatabase connInfo
   conn <- connect connInfo {connectDatabase="postgres"}
   dbExists' <- dbExists conn dbName
   if not dbExists' then return ()
   else do
-    conn' <- connect connInfo {connectDatabase=dbName}
     putStrLn $ "Deleting Database " <> dbName
-    void $ execute conn'
+    void $ execute conn
              [sql| DROP DATABASE ?; |]
              [Plain (fromLazyByteString . fromStrict . pack $ dbName)]
 

@@ -20,9 +20,9 @@ import           Control.Monad.Logger
 import           Data.ByteString.Lazy          (toStrict)
 import           Data.ByteString.Lazy.UTF8     (fromString)
 import           Data.Monoid                   ((<>))
-import           Data.Text                     hiding (length)
+import           Data.Text                     hiding (length, map)
 import           Database.PostgreSQL.Simple    (ConnectInfo (..), Connection,
-                                                connect)
+                                                close, connect)
 import           Database.PostgreSQL.Simple    (SqlError (..))
 import           Opaleye                       (queryTable, restrict, (.==))
 import           Opaleye.Column                (Column)
@@ -42,13 +42,10 @@ import           ChainBlock.Errors
 import           ChainBlock.Logging
 
 
-databaseInterface :: (forall a . PGDB a -> m a )
+databaseInterface :: Connection
+                  -> (forall a . PGDB a -> m a )
                   -> IO (IDataBase PGDB m)
-databaseInterface runDBInterface' = do
-  connInfo <- buildConnectInfo
-  let dbName = connectDatabase connInfo
-  _ <- createDBIfNeeded connInfo dbName
-  conn <- connect connInfo
+databaseInterface conn runDBInterface' = do
   return IDataBase { queryAllUsers           = queryAllUsers' conn
                    , queryUser               = queryUser' conn
                    , insertUser              = insertUser' conn
@@ -72,14 +69,26 @@ runDBInterfaceIO f = ExceptT . flip runLoggingT logMsg  . runExceptT . runPGDB $
 -----------------------------------------------------
 
 queryAllUsers' :: Connection -> PGDB [User]
-queryAllUsers' =  undefined
+queryAllUsers' conn = do
+  let src = "queryAllUsers'"
+  $logInfoS src ("querying all users")
+  rows <- catch (liftIO $ runQuery conn queryUsers)
+    (\ (err :: SomeException) -> throwError . Ex $ err)
+  return $ map (\(uId :: Int, un :: Text) -> User (Username un)
+                                   (UserId . toInteger . fromIntegral $ uId) )
+               rows
+  where
+    queryUsers :: Query (Column P.PGInt4, Column P.PGText)
+    queryUsers = proc () -> do
+      row <- queryTable userTable -< ()
+      returnA -< row
 
 queryUser' :: Connection -> Username -> PGDB User
 queryUser' conn un@(Username unText) = do
   let src = "queryUser'"
   $logInfoS src ("running on user" <> unText)
   rows <- catch (liftIO $ runQuery conn queryUserByName)
-    (\ (err :: IOException) -> undefined)
+                (\ (err :: SomeException) -> throwError . Ex $ err)
   case rows of
     [(uId :: Int, uName :: Text)] -> return $ User
                     (Username uName)
@@ -132,7 +141,6 @@ queryWebsiteCredentials' = undefined
 -- | Helper Funcitons
 -----------------------------------------------------
 
-
 buildConnectInfo :: IO ConnectInfo
 buildConnectInfo  = do
   host       <- getEnv "PG_HOST"
@@ -146,4 +154,3 @@ buildConnectInfo  = do
                        , connectPassword = dbPassword
                        , connectDatabase = dbName
                        }
-

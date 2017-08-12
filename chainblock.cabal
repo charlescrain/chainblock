@@ -24,6 +24,7 @@ executable chainblock
                       , chainblock
                       , http-media
                       , mtl
+                      , postgresql-simple
                       , servant-server
                       , text
                       , wai
@@ -93,6 +94,7 @@ test-suite              webapp-test
                       , lens
                       , memory
                       , mtl
+                      , postgresql-simple
                       , servant-server
                       , text
                       , wai
