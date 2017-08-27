@@ -9,7 +9,6 @@
 module ChainBlock.DB.Postgres where
 
 import           Control.Arrow                 (returnA)
-import           Control.Exception.Base        (IOException)
 import           Control.Monad.Catch           (Exception (..),
                                                 SomeException (..), catch,
                                                 throwM, try)
@@ -22,8 +21,7 @@ import           Data.ByteString.Lazy.UTF8     (fromString)
 import           Data.Monoid                   ((<>))
 import           Data.Text                     hiding (length, map)
 import           Database.PostgreSQL.Simple    (ConnectInfo (..), Connection,
-                                                close, connect)
-import           Database.PostgreSQL.Simple    (SqlError (..))
+                                                SqlError (..), close, connect)
 import           Opaleye                       (queryTable, restrict, (.==))
 import           Opaleye.Column                (Column)
 import           Opaleye.Manipulation          (runInsertManyReturning)
@@ -45,13 +43,23 @@ import           ChainBlock.Logging
 databaseInterface :: Connection
                   -> (forall a . PGDB a -> m a )
                   -> IO (IDataBase PGDB m)
-databaseInterface conn runDBInterface' = do
-  return IDataBase { queryAllUsers           = queryAllUsers' conn
-                   , queryUser               = queryUser' conn
-                   , insertUser              = insertUser' conn
-                   , queryWebsite            = queryWebsite' conn
-                   , queryWebsiteCredentials = queryWebsiteCredentials' conn
-                   , runDBI                  = runDBInterface'
+databaseInterface conn runDBInterface' =
+  return IDataBase { queryAllUsers     = queryAllUsers'     conn
+                   , queryUser         = queryUser'         conn
+                   , insertUser        = insertUser'        conn
+                   , updateUser        = updateUser'        conn
+                   , deleteUser        = deleteUser'        conn
+
+                   , queryWebsite      = queryWebsite'      conn
+                   , insertWebsite     = insertWebsite'     conn
+                   , updateWebsite     = updateWebsite'     conn
+                   , deleteWebsite     = deleteWebsite'     conn
+
+                   , queryCredentials  = queryCredentials'  conn
+                   , insertCredentials = insertCredentials' conn
+                   , updateCredentials = updateCredentials' conn
+                   , deleteCredentials = deleteCredentials' conn
+                   , runDBI           = runDBInterface'
                    }
 
 -----------------------------------------------------
@@ -62,16 +70,20 @@ runDBInterfaceBZ :: PGDB a -> BZ a
 runDBInterfaceBZ = undefined
 
 runDBInterfaceIO :: PGDB a -> (ExceptT CBError IO) a
-runDBInterfaceIO f = ExceptT . flip runLoggingT logMsg  . runExceptT . runPGDB $ f
+runDBInterfaceIO = ExceptT . flip runLoggingT logMsg  . runExceptT . runPGDB
 
 -----------------------------------------------------
 -- | Interface Implementation
 -----------------------------------------------------
 
+-----------------------------------------------------
+---- | User
+-----------------------------------------------------
+
 queryAllUsers' :: Connection -> PGDB [User]
 queryAllUsers' conn = do
   let src = "queryAllUsers'"
-  $logInfoS src ("querying all users")
+  $logInfoS src "querying all users"
   rows <- catch (liftIO $ runQuery conn queryUsers)
     (\ (err :: SomeException) -> throwError . Ex $ err)
   return $ map (\(uId :: Int, un :: Text) -> User (Username un)
@@ -86,19 +98,19 @@ queryAllUsers' conn = do
 queryUser' :: Connection -> Username -> PGDB User
 queryUser' conn un@(Username unText) = do
   let src = "queryUser'"
-  $logInfoS src ("running on user" <> unText)
+  $logInfoS src ("running on user " <> unText)
   rows <- catch (liftIO $ runQuery conn queryUserByName)
                 (\ (err :: SomeException) -> throwError . Ex $ err)
   case rows of
-    [(uId :: Int, uName :: Text)] -> return $ User
+    [(userId' :: Int, uName :: Text)] -> return $ User
                     (Username uName)
-                    (UserId . toInteger . fromIntegral $ uId)
+                    (UserId . toInteger . fromIntegral $ userId')
     [] -> do
-      let errorMsg = ("0 rows found for username" <> unUsername un)
+      let errorMsg = "0 rows found for username" <> unUsername un
       $logWarnS src errorMsg
       throwError $ DatabaseError src errorMsg NoResults
     _ -> do
-      let errorMsg = ("found multiple rows for username " <> unUsername un)
+      let errorMsg = "found multiple rows for username " <> unUsername un
       $logErrorS src errorMsg
       throwError . Ex . SomeException $ DatabaseEx
            src
@@ -108,7 +120,7 @@ queryUser' conn un@(Username unText) = do
     queryUserByName :: Query (Column P.PGInt4, Column P.PGText)
     queryUserByName = proc () -> do
       row@(_,uName) <- queryTable userTable -< ()
-      restrict -< (P.pgStrictText (unText) .== uName)
+      restrict -< (P.pgStrictText unText .== uName)
       returnA -< row
 
 insertUser' ::  Connection -> Username -> PGDB UserId
@@ -116,7 +128,7 @@ insertUser' conn un = do
   let src = "insertUser'"
       insertFields = [(Nothing, P.pgStrictText . unUsername $ un)]
   $logInfoS src ("inserting user" <> unUsername un)
-  [(id :: Int, _ :: Text)] <- catch
+  [(userId' :: Int, _ :: Text)] <- catch
     (liftIO $ runInsertManyReturning conn userTable insertFields id)
     (\(err :: SqlError) -> case sqlState err of
       "23505" -> do
@@ -127,15 +139,60 @@ insertUser' conn un = do
         $logErrorS src ("SqlError " <> (pack . show $ err))
         throwError . Ex . SomeException $ err
     )
-  return $ UserId . toInteger . fromIntegral $ id
+  return (UserId . toInteger . fromIntegral $ userId')
 
+updateUser' ::  Connection -> UserId -> Username -> PGDB ()
+updateUser' _conn _uId' _un = undefined
+
+deleteUser' ::  Connection -> UserId -> PGDB ()
+deleteUser' _conn _uId' = undefined
+
+-----------------------------------------------------
+---- | Website
+-----------------------------------------------------
 
 queryWebsite' :: Connection -> UserId -> PGDB [Website]
 queryWebsite' = undefined
 
-queryWebsiteCredentials' :: Connection -> UserId -> WebsiteId -> PGDB [WebsiteCredentials]
-queryWebsiteCredentials' = undefined
+insertWebsite' :: Connection
+               -> UserId
+               -> WebsiteURL
+               -> WebsiteName
+               -> PGDB WebsiteId
+insertWebsite' = undefined
 
+updateWebsite' :: Connection
+               -> WebsiteId
+               -> WebsiteURL
+               -> WebsiteName
+               -> PGDB ()
+updateWebsite' = undefined
+
+deleteWebsite' :: Connection -> WebsiteId -> PGDB ()
+deleteWebsite' = undefined
+
+-----------------------------------------------------
+---- | Credentials
+-----------------------------------------------------
+queryCredentials' :: Connection -> UserId -> WebsiteId -> PGDB [Credentials]
+queryCredentials' = undefined
+
+insertCredentials' :: Connection
+                   -> UserId
+                   -> EncryptedPassword
+                   -> WebUsername
+                   -> PGDB CredentialsId
+insertCredentials' = undefined
+
+updateCredentials' :: Connection
+                   -> CredentialsId
+                   -> EncryptedPassword
+                   -> WebUsername
+                   -> PGDB ()
+updateCredentials' = undefined
+
+deleteCredentials' :: Connection -> CredentialsId -> PGDB ()
+deleteCredentials' = undefined
 
 -----------------------------------------------------
 -- | Helper Funcitons
@@ -148,7 +205,7 @@ buildConnectInfo  = do
   dbName     <- getEnv "PG_DBNAME"
   dbUser     <- getEnv "PG_USER"
   dbPassword <- getEnv "PG_PASSWORD"
-  return $ ConnectInfo { connectHost = host
+  return ConnectInfo { connectHost = host
                        , connectPort = read port
                        , connectUser = dbUser
                        , connectPassword = dbPassword

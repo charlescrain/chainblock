@@ -21,15 +21,15 @@ logMsg :: Loc
        -> IO ()
 logMsg Loc{..} lsrc lvl logstr =
   putStrLn $ renderStyle style{lineLength=300} $ hsep
-    [ (text . padString 10 ' ' . show $ lvl)
-    , (text " | ")
-    , (text $ padString 20 ' ' loc_module)
-    , (text " | ")
-    , (text $ padString 25 ' ' loc_filename <> " " <> (show . fst $ loc_start))
-    , (text " | ")
-    , (text . padString 15 ' ' . unpack $ lsrc)
-    , (text " | ")
-    , (text . padString 20 ' ' $ BC.unpack . fromLogStr $ logstr)
+    [ text . padString 10 ' ' . show $ lvl
+    , text " | "
+    , text $ padString 30 ' ' loc_module
+    , text " | "
+    , text $ padString 40 ' ' loc_filename <> padString 6 ' ' (show . fst $ loc_start)
+    , text " | "
+    , text . padString 25 ' ' . unpack $ lsrc
+    , text " | "
+    , text . padString 20 ' ' $ BC.unpack . fromLogStr $ logstr
     -- <> "  |  "
     -- <> loc_filename
     -- <> "  |  "

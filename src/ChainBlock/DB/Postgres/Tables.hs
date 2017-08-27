@@ -15,7 +15,7 @@ import           Opaleye                          (Column, PGBytea, PGInt4,
 -----------------------------------------------------
 
 userTable :: Table (Maybe (Column PGInt4), Column PGText)
-                     (Column PGInt4, Column PGText)
+                   (Column PGInt4, Column PGText)
 userTable = Table "users" (p2 ( optional "id"
                               , required "name" ))
 
@@ -31,23 +31,25 @@ createUserTable = [sql|
 -- | Website
 -----------------------------------------------------
 
-credentialsTable :: Table (Column PGText, Column PGBytea, Column PGInt4)
-                          (Column PGText, Column PGBytea, Column PGInt4)
-credentialsTable = Table "credentials" (p3 ( required "username"
-                                                , required "encrypted_pass"
-                                                , required "website_id" ))
+credentialsTable :: Table (Maybe (Column PGInt4), Column PGText, Column PGBytea, Column PGInt4)
+                          (Column PGInt4, Column PGText, Column PGBytea, Column PGInt4)
+credentialsTable = Table "credentials" (p4 ( optional "id"
+                                           , required "username"
+                                           , required "encrypted_pass"
+                                           , required "website_id" ))
 createCredentialsTable :: Query
 createCredentialsTable = [sql|
   CREATE TABLE IF NOT EXISTS credentials (
-    username     text  NOT NULL,
-    encrypted_pass     bytea  NOT NULL,
-    website_id   integer REFERENCES websites(id) NOT NULL
+    id              serial PRIMARY KEY  NOT NULL UNIQUE,
+    username        text  NOT NULL,
+    encrypted_pass  bytea  NOT NULL,
+    website_id      integer REFERENCES websites(id) NOT NULL
   );
   |]
 
-websiteTable :: Table (Column PGInt4, Column PGText, Column PGText, Column PGInt4)
+websiteTable :: Table (Maybe (Column PGInt4), Column PGText, Column PGText, Column PGInt4)
                       (Column PGInt4, Column PGText, Column PGText, Column PGInt4)
-websiteTable = Table "websites" (p4 ( required "id"
+websiteTable = Table "websites" (p4 ( optional "id"
                                     , required "website_url"
                                     , required "website_name"
                                     , required "user_id" ))

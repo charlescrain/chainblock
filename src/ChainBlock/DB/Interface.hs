@@ -23,14 +23,50 @@ class ( MonadError CBError m
       ) => DBMonad m
 
 data IDataBase m m'  =
-  IDataBase { queryAllUsers :: (DBMonad m) => m [User]
-            , queryUser     :: (DBMonad m) => Username -> m User
-            , insertUser :: (DBMonad m) => Username -> m UserId
-            , queryWebsite :: (DBMonad m) => UserId -> m [Website]
-            , queryWebsiteCredentials :: (DBMonad m)
-                                      => UserId
-                                      -> WebsiteId
-                                      -> m [WebsiteCredentials]
+  IDataBase { -- Users
+              queryAllUsers :: (DBMonad m) => m [User]
+            , queryUser     :: (DBMonad m) => Username             -> m User
+            , insertUser    :: (DBMonad m) => Username             -> m UserId
+            , updateUser    :: (DBMonad m) => UserId   -> Username -> m ()
+            , deleteUser    :: (DBMonad m) => UserId               -> m ()
+
+              -- Website
+            , queryWebsite  :: (DBMonad m)
+                            => UserId
+                            -> m [Website]
+            , insertWebsite :: (DBMonad m)
+                            => UserId
+                            -> WebsiteURL
+                            -> WebsiteName
+                            -> m WebsiteId
+            , updateWebsite :: (DBMonad m)
+                            => WebsiteId
+                            -> WebsiteURL
+                            -> WebsiteName
+                            -> m ()
+            , deleteWebsite :: (DBMonad m)
+                            => WebsiteId
+                            -> m ()
+
+              -- Credentials
+            , queryCredentials  :: (DBMonad m)
+                                => UserId
+                                -> WebsiteId
+                                -> m [Credentials]
+            , insertCredentials :: (DBMonad m)
+                                => UserId
+                                -> EncryptedPassword
+                                -> WebUsername
+                                -> m CredentialsId
+            , updateCredentials :: (DBMonad m)
+                                => CredentialsId
+                                -> EncryptedPassword
+                                -> WebUsername
+                                -> m ()
+            , deleteCredentials :: (DBMonad m)
+                                => CredentialsId
+                                -> m ()
+              -- run function
             , runDBI :: forall a . m a -> m' a
             }
 
