@@ -52,17 +52,21 @@ userSpec dbi =
       eResInserts <- mapM (runExceptT . runDBI dbi . insertUser dbi . Username)
                           usernames
       mapM_ (shouldBe True . isRight)  eResInserts
+
       eResQuery <- runExceptT . runDBI dbi . queryAllUsers $ dbi
       isRight eResQuery `shouldBe` True
+
       let Right ress = eResQuery
-      let inDB = map (\ User {name=Username un} -> elem un usernames)
+          inDB = map (\ User {name=Username un} -> elem un usernames)
                      ress
       mapM_ (shouldBe True) inDB
     it "should create a user and query the user" $ do
       eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
       isRight eResInsert `shouldBe` True
+
       eResQuery <- runExceptT . runDBI dbi . queryUser dbi $ testUsername
       isRight eResQuery `shouldBe` True
+
       let Right resQuery = eResQuery
       name resQuery `shouldBe` testUsername
     it "should fail querying a non-existing user" $ do
@@ -75,25 +79,74 @@ userSpec dbi =
       eResQuery <- runExceptT . runDBI dbi . queryUser dbi $ testUsername
       isRight eResQuery `shouldBe` True
       let Right user = eResQuery
+
       name user `shouldBe` testUsername
       let username' = Username "taj-burrow"
       eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi (uId user) username'
       isRight eResUpdate `shouldBe` True
+
       eResQuery' <- runExceptT . runDBI dbi . queryUser dbi $ username'
       isRight eResQuery' `shouldBe` True
       let Right user' = eResQuery'
       name user' `shouldBe` username'
-    it "should fail updating non-existent user" $
-      pendingWith "Un-implemented"
-    it "should delete a user" $
-      pendingWith "Dependent on Websites and credentials"
-    it "should fail delete non-existent user" $
-      pendingWith "Dependent on Websites and credentials"
+    it "should fail updating non-existent user" $ do
+      let username' = Username "taj-burrow"
+          fakeId = UserId 20
+      eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi fakeId username'
+      isRight eResUpdate `shouldBe` False
+    it "should create and delete a user" $ do
+      let username' = Username "faramir"
+      eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ username'
+      isRight eResInsert `shouldBe` True
+
+      let Right uId' = eResInsert
+      eResDelete <- runExceptT . runDBI dbi $ deleteUser dbi uId'
+      isRight eResDelete `shouldBe` True
+    it "should fail delete non-existent user" $ do
+      let uId' = UserId 20
+      eResDelete <- runExceptT . runDBI dbi $ deleteUser dbi uId'
+      isRight eResDelete `shouldBe` False
 
 websiteSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
-websiteSpec _dbi = describe "Website Spec" $ do
-    it "should create a website and query the website" $
-      pendingWith "Un-implemented"
+websiteSpec dbi = describe "Website Spec" $ do
+    it "should query all websites for a user" $ do
+      pendingWith "Under consruction"
+      let username' = Username "queryAllWebsites"
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ username'
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+          webdetails = [ (WebsiteURL "webURL1", WebsiteName "webname1")
+                       , (WebsiteURL "webURL2", WebsiteName "webname2")
+                       , (WebsiteURL "webURL3", WebsiteName "webname3")
+                       , (WebsiteURL "webURL4", WebsiteName "webname4") ]
+      eResInserts <- mapM (runExceptT . runDBI dbi . uncurry (insertWebsite dbi uId'))
+                          webdetails
+      mapM_ (shouldBe True . isRight)  eResInserts
+
+      eResQuery <- runExceptT . runDBI dbi $ queryWebsites dbi uId'
+      isRight eResQuery `shouldBe` True
+
+      let Right ress = eResQuery
+          inDB = map undefined
+                     ress
+      mapM_ (shouldBe True) inDB
+    it "should create a website and query the website" $ do
+      let username' = Username "denethor"
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ username'
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+          weburl = WebsiteURL "http://oneringtorule.com"
+          webname = WebsiteName "OneRingtoRule"
+      eResInsert <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsert `shouldBe` True
+
+      let Right webId' = eResInsert
+      eResQuery <- runExceptT . runDBI dbi . queryWebsite dbi $ webId'
+      isRight eResQuery `shouldBe` True
+      let Right website = eResQuery
+      websiteName website `shouldBe` webname
     it "should fail querying a non-existing website" $
       pendingWith "Un-implemented"
     it "should fail inserting existing website" $

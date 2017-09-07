@@ -50,6 +50,7 @@ databaseInterface conn runDBInterface' =
                    , updateUser        = updateUser'        conn
                    , deleteUser        = deleteUser'        conn
 
+                   , queryWebsites     = queryWebsites'     conn
                    , queryWebsite      = queryWebsite'      conn
                    , insertWebsite     = insertWebsite'     conn
                    , updateWebsite     = updateWebsite'     conn
@@ -151,7 +152,10 @@ deleteUser' _conn _uId' = undefined
 ---- | Website
 -----------------------------------------------------
 
-queryWebsite' :: Connection -> UserId -> PGDB [Website]
+queryWebsites' :: Connection -> UserId -> PGDB [Website]
+queryWebsites' = undefined
+
+queryWebsite' :: Connection -> WebsiteId -> PGDB Website
 queryWebsite' = undefined
 
 insertWebsite' :: Connection

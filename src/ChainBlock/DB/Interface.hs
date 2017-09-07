@@ -31,9 +31,12 @@ data IDataBase m m'  =
             , deleteUser    :: (DBMonad m) => UserId               -> m ()
 
               -- Website
-            , queryWebsite  :: (DBMonad m)
+            , queryWebsites  :: (DBMonad m)
                             => UserId
                             -> m [Website]
+            , queryWebsite  :: (DBMonad m)
+                            => WebsiteId
+                            -> m Website
             , insertWebsite :: (DBMonad m)
                             => UserId
                             -> WebsiteURL
