@@ -1,11 +1,21 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings          #-}
 
 module ChainBlock.DB.Types where
 
-import           Data.ByteString   (ByteString)
-import           Data.Text         (Text)
+import           Data.ByteString           (ByteString)
+import qualified Data.ByteString           as B
+import           Data.Char                 (isAsciiLower, isAsciiUpper)
+import           Data.Monoid               ((<>))
+import           Data.Text                 (Text)
+import qualified Data.Text                 as T
+import qualified Data.Text.Encoding        as T
 import           GHC.Generics
+import           Test.QuickCheck.Arbitrary
+import           Test.QuickCheck.Gen
+import           Test.QuickCheck.Modifiers
+
 
 import           ChainBlock.Errors
 
@@ -19,48 +29,79 @@ data User =
         , uId  :: UserId
         }
   deriving (Show, Eq, Generic)
+instance Arbitrary User where
+  arbitrary = User <$> arbitrary
+                   <*> arbitrary
 
 
-newtype UserId = UserId {unUserId :: Integer}
+newtype UserId = UserId Integer
+  deriving (Show, Eq, Ord, Generic, Arbitrary)
+
+newtype Username = Username Text
   deriving (Show, Eq, Ord, Generic)
-
-newtype Username = Username {unUsername :: Text}
-  deriving (Show, Eq, Ord, Generic)
+instance Arbitrary Username where
+  arbitrary = fmap Username (genTextOfSize 8)
 
 -----------------------------------------------------
 -- | Website
 -----------------------------------------------------
 
-data Credentials = Credentials { credId    :: CredentialsId
-                               , username  :: WebUsername
-                               , password  :: EncryptedPassword
-                               , websiteId :: WebsiteId
+data Credentials = Credentials { credId   :: CredentialsId
+                               , username :: WebUsername
+                               , password :: EncryptedPassword
+                               , webId    :: WebsiteId
                                }
   deriving (Show, Eq, Ord, Generic)
+instance Arbitrary Credentials where
+  arbitrary = Credentials <$> arbitrary
+                          <*> arbitrary
+                          <*> arbitrary
+                          <*> arbitrary
 
 newtype CredentialsId = CredentialsId  {unCredentialsId :: Integer}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, Arbitrary)
 
-newtype EncryptedPassword =
-  EncryptedPassword {unEncryptedPassword :: ByteString}
+newtype EncryptedPassword = EncryptedPassword ByteString
   deriving (Show, Eq, Ord, Generic)
+instance Arbitrary EncryptedPassword where
+  arbitrary = fmap (EncryptedPassword . T.encodeUtf8 . T.pack) (mapM (\ _ -> arbitrary :: Gen Char) [1..16])
+
 
 data Website =
-  Website { webURL      :: WebsiteURL
+  Website { websiteURL  :: WebsiteURL
           , websiteName :: WebsiteName
-          , wId         :: WebsiteId
+          , websiteId   :: WebsiteId
           , userId      :: UserId
           }
   deriving (Show, Eq, Ord, Generic)
 
 newtype WebsiteId   = WebsiteId   {unWebsiteId   :: Integer}
-  deriving (Show, Eq, Ord, Generic)
+  deriving (Show, Eq, Ord, Generic, Arbitrary)
 
 newtype WebUsername = WebUsername {unWebUsername :: Text}
   deriving (Show, Eq, Ord, Generic)
+instance Arbitrary WebUsername where
+  arbitrary = fmap WebUsername (genTextOfSize 12)
 
-newtype WebsiteURL  = WebsiteURL  {unWebsiteURL  :: Text}
-  deriving (Show, Eq, Ord, Generic)
 
-newtype WebsiteName = WebsiteName {unWebsiteName  :: Text}
+newtype WebsiteURL  = WebsiteURL Text
   deriving (Show, Eq, Ord, Generic)
+instance Arbitrary WebsiteURL where
+  arbitrary = do
+    partialUrl <- genTextOfSize 12
+    return (WebsiteURL $ "http://" <> partialUrl <> ".com")
+
+newtype WebsiteName = WebsiteName Text
+  deriving (Show, Eq, Ord, Generic)
+instance Arbitrary WebsiteName where
+  arbitrary = fmap WebsiteName (genTextOfSize 12)
+
+
+genTextOfSize :: Int -> Gen Text
+genTextOfSize size = T.pack <$> mapM genLetterOrNumber [1..size]
+    where
+      genLetterOrNumber _ = do
+        ch <- arbitrary :: Gen Char
+        if isAsciiLower ch || isAsciiUpper ch
+             then return ch
+             else genLetterOrNumber 1

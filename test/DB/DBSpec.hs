@@ -12,6 +12,8 @@ import           Database.PostgreSQL.Simple   (ConnectInfo (..), Connection,
                                                close, connect)
 import           System.Environment           (getEnv)
 import           Test.Hspec
+import           Test.QuickCheck.Arbitrary    (Arbitrary (..))
+import           Test.QuickCheck.Gen          (generate)
 
 import           ChainBlock.DB.Interface
 import           ChainBlock.DB.Postgres
@@ -48,8 +50,8 @@ userSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
 userSpec dbi =
   describe "User Spec" $ do
     it "should query all created users" $ do
-      let usernames = ["user1", "user2", "user3", "user4"]
-      eResInserts <- mapM (runExceptT . runDBI dbi . insertUser dbi . Username)
+      usernames <- mapM (\ _ -> generate arbitrary) [1..5]
+      eResInserts <- mapM (runExceptT . runDBI dbi . insertUser dbi)
                           usernames
       mapM_ (shouldBe True . isRight)  eResInserts
 
@@ -57,10 +59,11 @@ userSpec dbi =
       isRight eResQuery `shouldBe` True
 
       let Right ress = eResQuery
-          inDB = map (\ User {name=Username un} -> elem un usernames)
+          inDB = map (\ User {name=un} -> elem un usernames)
                      ress
       mapM_ (shouldBe True) inDB
     it "should create a user and query the user" $ do
+      testUsername <- generate arbitrary
       eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
       isRight eResInsert `shouldBe` True
 
@@ -70,41 +73,50 @@ userSpec dbi =
       let Right resQuery = eResQuery
       name resQuery `shouldBe` testUsername
     it "should fail querying a non-existing user" $ do
-      eResQuery <- runExceptT . runDBI dbi . queryUser dbi . Username $ "not-a-user"
+      testUsername <- generate arbitrary
+      eResQuery <- runExceptT . runDBI dbi . queryUser dbi $ testUsername
       isLeft eResQuery `shouldBe` True
     it "should fail inserting existing user" $ do
+      testUsername <- generate arbitrary
       eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
-      isLeft eResInsert `shouldBe` True
+      isRight eResInsert `shouldBe` True
+
+      eResInsertFail <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isLeft eResInsertFail `shouldBe` True
     it "should update a user with a new Username" $ do
+      testUsername <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsert `shouldBe` True
+
       eResQuery <- runExceptT . runDBI dbi . queryUser dbi $ testUsername
       isRight eResQuery `shouldBe` True
       let Right user = eResQuery
 
       name user `shouldBe` testUsername
-      let username' = Username "taj-burrow"
-      eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi (uId user) username'
+      testUsername' <- generate arbitrary
+      eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi (uId user) testUsername'
       isRight eResUpdate `shouldBe` True
 
-      eResQuery' <- runExceptT . runDBI dbi . queryUser dbi $ username'
+      eResQuery' <- runExceptT . runDBI dbi . queryUser dbi $ testUsername'
       isRight eResQuery' `shouldBe` True
       let Right user' = eResQuery'
-      name user' `shouldBe` username'
+      name user' `shouldBe` testUsername'
     it "should fail updating non-existent user" $ do
-      let username' = Username "taj-burrow"
-          fakeId = UserId 20
-      eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi fakeId username'
+      testUsername <- generate arbitrary
+      nonExistentId <- generate arbitrary
+      eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi nonExistentId testUsername
       isRight eResUpdate `shouldBe` False
     it "should create and delete a user" $ do
-      let username' = Username "faramir"
-      eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ username'
+      testUsername <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
       isRight eResInsert `shouldBe` True
 
       let Right uId' = eResInsert
       eResDelete <- runExceptT . runDBI dbi $ deleteUser dbi uId'
       isRight eResDelete `shouldBe` True
     it "should fail delete non-existent user" $ do
-      let uId' = UserId 20
-      eResDelete <- runExceptT . runDBI dbi $ deleteUser dbi uId'
+      nonExistentId <- generate arbitrary
+      eResDelete <- runExceptT . runDBI dbi $ deleteUser dbi nonExistentId
       isRight eResDelete `shouldBe` False
 
 websiteSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
@@ -128,12 +140,12 @@ websiteSpec dbi = describe "Website Spec" $ do
       isRight eResQuery `shouldBe` True
 
       let Right ress = eResQuery
-          inDB = map undefined
+          inDB = map (\ w -> (websiteURL w, websiteName w) `elem` webdetails)
                      ress
       mapM_ (shouldBe True) inDB
     it "should create a website and query the website" $ do
-      let username' = Username "denethor"
-      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ username'
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
       isRight eResInsertUser `shouldBe` True
 
       let Right uId' = eResInsertUser
@@ -147,10 +159,16 @@ websiteSpec dbi = describe "Website Spec" $ do
       isRight eResQuery `shouldBe` True
       let Right website = eResQuery
       websiteName website `shouldBe` webname
-    it "should fail querying a non-existing website" $
-      pendingWith "Un-implemented"
-    it "should fail inserting existing website" $
-      pendingWith "Un-implemented"
+    it "should fail querying a non-existing website" $ do
+      eResQuery <- runExceptT . runDBI dbi . queryWebsite dbi . WebsiteId $ 1999
+      isLeft eResQuery `shouldBe` True
+    it "should fail inserting existing website" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isLeft eResInsert `shouldBe` True
     it "should update a website with a new details" $
       pendingWith "Un-implemented"
     it "should fail updating non-existent website" $
@@ -176,12 +194,6 @@ credntialsSpec _dbi = describe "Credentials Spec" $ do
       pendingWith "Un-implemented"
     it "should fail delete non-existent credentials" $
       pendingWith "Un-implemented"
-
-------------------------------------------------------------------------------
---Spec Fixtures
-------------------------------------------------------------------------------
-testUsername :: Username
-testUsername = Username "rob.machads"
 
 
 ------------------------------------------------------------------------------

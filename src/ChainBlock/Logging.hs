@@ -21,7 +21,7 @@ logMsg :: Loc
        -> IO ()
 logMsg Loc{..} lsrc lvl logstr =
   putStrLn $ renderStyle style{lineLength=300} $ hsep
-    [ text . padString 10 ' ' . show $ lvl
+    [ text . padString 6  ' ' . drop 5 . show $ lvl
     , text " | "
     , text $ padString 30 ' ' loc_module
     , text " | "

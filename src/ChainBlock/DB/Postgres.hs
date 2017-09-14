@@ -97,9 +97,9 @@ queryAllUsers' conn = do
       returnA -< row
 
 queryUser' :: Connection -> Username -> PGDB User
-queryUser' conn un@(Username unText) = do
+queryUser' conn (Username un) = do
   let src = "queryUser'"
-  $logInfoS src ("running on user " <> unText)
+  $logInfoS src ("running on user " <> un)
   rows <- catch (liftIO $ runQuery conn queryUserByName)
                 (\ (err :: SomeException) -> throwError . Ex $ err)
   case rows of
@@ -107,11 +107,11 @@ queryUser' conn un@(Username unText) = do
                     (Username uName)
                     (UserId . toInteger . fromIntegral $ userId')
     [] -> do
-      let errorMsg = "0 rows found for username" <> unUsername un
+      let errorMsg = "0 rows found for username " <> un
       $logWarnS src errorMsg
       throwError $ DatabaseError src errorMsg NoResults
     _ -> do
-      let errorMsg = "found multiple rows for username " <> unUsername un
+      let errorMsg = "found multiple rows for username " <> un
       $logErrorS src errorMsg
       throwError . Ex . SomeException $ DatabaseEx
            src
@@ -121,20 +121,20 @@ queryUser' conn un@(Username unText) = do
     queryUserByName :: Query (Column P.PGInt4, Column P.PGText)
     queryUserByName = proc () -> do
       row@(_,uName) <- queryTable userTable -< ()
-      restrict -< (P.pgStrictText unText .== uName)
+      restrict -< (P.pgStrictText un .== uName)
       returnA -< row
 
 insertUser' ::  Connection -> Username -> PGDB UserId
-insertUser' conn un = do
+insertUser' conn (Username un) = do
   let src = "insertUser'"
-      insertFields = [(Nothing, P.pgStrictText . unUsername $ un)]
-  $logInfoS src ("inserting user" <> unUsername un)
+      insertFields = [(Nothing, P.pgStrictText  un)]
+  $logInfoS src ("inserting user " <> un)
   [(userId' :: Int, _ :: Text)] <- catch
     (liftIO $ runInsertManyReturning conn userTable insertFields id)
     (\(err :: SqlError) -> case sqlState err of
       "23505" -> do
-        let errorMsg = "User with name " <> unUsername un <> " already exists"
-        $logWarnS src errorMsg
+        let errorMsg = "User with name " <> un <> " already exists"
+        $logErrorS src errorMsg
         throwError $ DatabaseError src errorMsg DuplicateKeyViolation
       _ -> do
         $logErrorS src ("SqlError " <> (pack . show $ err))

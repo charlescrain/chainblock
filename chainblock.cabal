@@ -17,7 +17,7 @@ executable chainblock
   hs-source-dirs:       app
   main-is:              Main.hs
   default-language:     Haskell2010
-  build-depends:        base >= 4.7 && < 5
+  build-depends:        base >= 4.7
                       , aeson
                       , attoparsec
                       , bytestring
@@ -53,13 +53,14 @@ library
                       , Config.Environment
 
   default-language:     Haskell2010
-  build-depends:        base >= 4.7 && < 5
+  build-depends:        base >= 4.7 
                       , aeson
                       , base16-bytestring
                       , binary
                       , bytestring
                       , cryptonite
                       , exceptions
+                      , QuickCheck 
                       , http-api-data
                       , pretty
                       , memory
@@ -89,6 +90,7 @@ test-suite              webapp-test
                       , bytestring
                       , chainblock
                       , cryptonite
+                      , QuickCheck 
                       , hspec
                       , http-media
                       , lens
