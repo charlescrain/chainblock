@@ -24,7 +24,9 @@ import           Database.PostgreSQL.Simple    (ConnectInfo (..), Connection,
                                                 SqlError (..), close, connect)
 import           Opaleye                       (queryTable, restrict, (.==))
 import           Opaleye.Column                (Column)
-import           Opaleye.Manipulation          (runInsertManyReturning)
+import           Opaleye.Manipulation          (runDelete,
+                                                runInsertManyReturning,
+                                                runUpdate)
 import qualified Opaleye.PGTypes               as P
 import           Opaleye.QueryArr              (Query)
 import           Opaleye.RunQuery              (runQuery)
@@ -145,10 +147,43 @@ insertUser' conn (Username un) = do
   return (UserId . toInteger . fromIntegral $ userId')
 
 updateUser' ::  Connection -> UserId -> Username -> PGDB ()
-updateUser' _conn _uId' _un = undefined
+updateUser' conn (UserId uId') (Username un) = do
+  let src = "updateUser'"
+  $logInfoS src ("updating user " <> un)
+  updatedRows <- catch
+         (liftIO $ runUpdate
+                     conn
+                     userTable
+                     (\ (id',_) -> (Just id',P.pgStrictText un))
+                     (\ (id',_) -> (id' .==) . P.pgInt4 $ fromInteger uId'))
+         (\(err :: SqlError) -> do
+             $logErrorS src ("SqlError " <> (pack . show $ err))
+             throwError . Ex . SomeException $ err)
+  if updatedRows == 0
+    then do
+        let errorMsg = pack ("No record with id found. id=" <> show uId' )
+        $logErrorS src errorMsg
+        throwError $ DatabaseError src errorMsg NoRowsAltered
+    else return ()
 
 deleteUser' ::  Connection -> UserId -> PGDB ()
-deleteUser' _conn _uId' = undefined
+deleteUser' conn (UserId uId') = do
+  let src = "deleteUser'"
+  $logInfoS src ("deleting user with id " <> pack (show uId'))
+  deletedRows <- catch
+         (liftIO $ runDelete
+                     conn
+                     userTable
+                     (\ (id',_) -> (id' .==) . P.pgInt4 $ fromInteger uId'))
+         (\(err :: SqlError) -> do
+             $logErrorS src ("SqlError " <> (pack . show $ err))
+             throwError . Ex . SomeException $ err)
+  if deletedRows == 0
+    then do
+        let errorMsg = pack ("No record with id found. id=" <> show uId' )
+        $logErrorS src errorMsg
+        throwError $ DatabaseError src errorMsg NoRowsAltered
+    else return ()
 
 -----------------------------------------------------
 ---- | Website

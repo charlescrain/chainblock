@@ -89,13 +89,9 @@ userSpec dbi =
       eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
       isRight eResInsert `shouldBe` True
 
-      eResQuery <- runExceptT . runDBI dbi . queryUser dbi $ testUsername
-      isRight eResQuery `shouldBe` True
-      let Right user = eResQuery
-
-      name user `shouldBe` testUsername
+      let Right uId' = eResInsert
       testUsername' <- generate arbitrary
-      eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi (uId user) testUsername'
+      eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi uId' testUsername'
       isRight eResUpdate `shouldBe` True
 
       eResQuery' <- runExceptT . runDBI dbi . queryUser dbi $ testUsername'
@@ -106,7 +102,9 @@ userSpec dbi =
       testUsername <- generate arbitrary
       nonExistentId <- generate arbitrary
       eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi nonExistentId testUsername
-      isRight eResUpdate `shouldBe` False
+      print "==============================================="
+      print eResUpdate
+      isLeft eResUpdate `shouldBe` True
     it "should create and delete a user" $ do
       testUsername <- generate arbitrary
       eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
