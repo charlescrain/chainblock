@@ -46,14 +46,16 @@ instance Arbitrary Username where
 -- | Website
 -----------------------------------------------------
 
-data Credentials = Credentials { credId   :: CredentialsId
-                               , username :: WebUsername
-                               , password :: EncryptedPassword
-                               , webId    :: WebsiteId
+data Credentials = Credentials { credId     :: CredentialsId
+                               , username   :: WebUsername
+                               , password   :: EncryptedPassword
+                               , webId      :: WebsiteId
+                               , credUserId :: UserId
                                }
   deriving (Show, Eq, Ord, Generic)
 instance Arbitrary Credentials where
   arbitrary = Credentials <$> arbitrary
+                          <*> arbitrary
                           <*> arbitrary
                           <*> arbitrary
                           <*> arbitrary

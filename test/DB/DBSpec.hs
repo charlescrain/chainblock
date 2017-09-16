@@ -131,7 +131,6 @@ websiteSpec dbi = describe "Website Spec" $ do
           siteIndexes = [1..5]
       testWebURLs :: [WebsiteURL] <- mapM (const (generate arbitrary)) siteIndexes
       testWebNames :: [WebsiteName] <- mapM (const (generate arbitrary)) siteIndexes
-
       eResInserts <- mapM (\i ->
                               let webURL = testWebURLs !! i
                                   webName = testWebNames !! i
@@ -141,7 +140,6 @@ websiteSpec dbi = describe "Website Spec" $ do
 
       eResQuery <- runExceptT . runDBI dbi $ queryWebsites dbi uId'
       isRight eResQuery `shouldBe` True
-
       let Right ress = eResQuery
           inDB = map (\ w -> websiteURL w `elem` testWebURLs && websiteName w `elem` testWebNames)
                      ress
@@ -162,8 +160,10 @@ websiteSpec dbi = describe "Website Spec" $ do
       isRight eResQuery `shouldBe` True
       let Right website = eResQuery
       websiteName website `shouldBe` webname
+      websiteURL website `shouldBe` weburl
     it "should fail querying a non-existing website" $ do
-      eResQuery <- runExceptT . runDBI dbi . queryWebsite dbi . WebsiteId $ 1999
+      webId' <- generate arbitrary
+      eResQuery <- runExceptT . runDBI dbi . queryWebsite dbi $ webId'
       isLeft eResQuery `shouldBe` True
     it "should fail inserting existing website" $ do
       testUsername <- generate arbitrary
@@ -220,21 +220,146 @@ websiteSpec dbi = describe "Website Spec" $ do
       isRight eResDelete `shouldBe` False
 
 credntialsSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
-credntialsSpec _dbi = describe "Credentials Spec" $ do
-    it "should create a credentials and query the credentials" $
-      pendingWith "Un-implemented"
-    it "should fail querying a non-existing credentials" $
-      pendingWith "Un-implemented"
-    it "should fail inserting existing credentials" $
-      pendingWith "Un-implemented"
-    it "should update a credentials with a new details" $
-      pendingWith "Un-implemented"
-    it "should fail updating non-existent credentials" $
-      pendingWith "Un-implemented"
-    it "should delete a credentials" $
-      pendingWith "Un-implemented"
-    it "should fail delete non-existent credentials" $
-      pendingWith "Un-implemented"
+credntialsSpec dbi = describe "Credentials Spec" $ do
+    it "should create a credentials and query the credentials" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsertWeb <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsertWeb `shouldBe` True
+
+      let Right webId' = eResInsertWeb
+          credIndexes = [1..5]
+      encryptedPasswords  :: [EncryptedPassword] <- mapM (const (generate arbitrary)) credIndexes
+      webUserNames :: [WebUsername] <- mapM (const (generate arbitrary)) credIndexes
+      eResInserts <- mapM (\i ->
+                              let webPass = encryptedPasswords !! i
+                                  webUName = webUserNames !! i
+                              in runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' webPass webUName)
+                           credIndexes
+      mapM_ (shouldBe True . isRight)  eResInserts
+
+      eResQuery <- runExceptT . runDBI dbi $ queryAllUserCredentials dbi uId'
+      mapM_ (shouldBe True . isRight)  eResInserts
+      let Right ress = eResQuery
+          inDB = map (\ c -> credUserId c == uId'
+                          && webId c == webId'
+                          && username c `elem` webUserNames
+                          && password c `elem` encryptedPasswords)
+                     ress
+      mapM_ (shouldBe True) inDB
+
+    it "should create and query credentials" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsertWeb <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsertWeb `shouldBe` True
+
+      let Right webId' = eResInsertWeb
+      encryptedPassword <- generate arbitrary
+      webUserName <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' encryptedPassword webUserName
+      isRight eResInsert `shouldBe` True
+
+      let Right cId' = eResInsert
+      eResQuery <- runExceptT . runDBI dbi $ queryCredentials dbi cId'
+      isRight eResQuery `shouldBe` True
+      let Right cred = eResQuery
+      username cred `shouldBe` webUserName
+      password cred `shouldBe` encryptedPassword
+
+    it "should fail querying a non-existing credentials" $ do
+      credId' <- generate arbitrary
+      eResQuery <- runExceptT . runDBI dbi . queryCredentials dbi $ credId'
+      isLeft eResQuery `shouldBe` True
+    it "should fail inserting existing credentials" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsertWeb <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsertWeb `shouldBe` True
+
+      let Right webId' = eResInsertWeb
+      encryptedPassword <- generate arbitrary
+      webUserName <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' encryptedPassword webUserName
+      isRight eResInsert `shouldBe` True
+
+      let Right cId' = eResInsert
+      eResQuery <- runExceptT . runDBI dbi $ queryCredentials dbi cId'
+      isRight eResQuery `shouldBe` True
+
+      eResInsertFail <- runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' encryptedPassword webUserName
+      isLeft eResInsertFail `shouldBe` True
+
+    it "should update a credentials with a new details" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsertWeb <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsertWeb `shouldBe` True
+
+      let Right webId' = eResInsertWeb
+      encryptedPassword <- generate arbitrary
+      webUserName <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' encryptedPassword webUserName
+      isRight eResInsert `shouldBe` True
+
+      let Right cId' = eResInsert
+      webUserName' <- generate arbitrary
+      encryptedPassword' <- generate arbitrary
+      eResUpdate <- runExceptT . runDBI dbi $ updateCredentials dbi cId' encryptedPassword' webUserName'
+      isRight eResUpdate `shouldBe` True
+
+    it "should fail updating non-existent credentials" $ do
+      cId' <- generate arbitrary
+      pass' <- generate arbitrary
+      webname' <- generate arbitrary
+      eResUpdate <- runExceptT . runDBI dbi $ updateWebsite dbi cId' pass' webname'
+      isLeft eResUpdate `shouldBe` True
+
+    it "should delete a credentials" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsertWeb <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsertWeb `shouldBe` True
+
+      let Right webId' = eResInsertWeb
+      encryptedPassword <- generate arbitrary
+      webUserName <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' encryptedPassword webUserName
+      isRight eResInsert `shouldBe` True
+
+      let Right cId' = eResInsert
+      eResDelete <- runExceptT . runDBI dbi $ deleteCredentials dbi cId'
+      isRight eResDelete `shouldBe` True
+
+    it "should fail delete non-existent credentials" $ do
+      cId' <- generate arbitrary
+      eResDelete <- runExceptT . runDBI dbi $ deleteCredentials dbi cId'
+      isLeft eResDelete `shouldBe` True
 
 
 ------------------------------------------------------------------------------

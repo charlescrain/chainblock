@@ -31,7 +31,7 @@ data IDataBase m m'  =
             , deleteUser    :: (DBMonad m) => UserId               -> m ()
 
               -- Website
-            , queryWebsites  :: (DBMonad m)
+            , queryWebsites :: (DBMonad m)
                             => UserId
                             -> m [Website]
             , queryWebsite  :: (DBMonad m)
@@ -52,12 +52,15 @@ data IDataBase m m'  =
                             -> m ()
 
               -- Credentials
+            , queryAllUserCredentials  :: (DBMonad m)
+                                       => UserId
+                                       -> m [Credentials]
             , queryCredentials  :: (DBMonad m)
-                                => UserId
-                                -> WebsiteId
-                                -> m [Credentials]
+                                => CredentialsId
+                                -> m Credentials
             , insertCredentials :: (DBMonad m)
                                 => UserId
+                                -> WebsiteId
                                 -> EncryptedPassword
                                 -> WebUsername
                                 -> m CredentialsId

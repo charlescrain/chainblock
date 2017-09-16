@@ -44,22 +44,24 @@ databaseInterface :: Connection
                   -> (forall a . PGDB a -> m a )
                   -> IO (IDataBase PGDB m)
 databaseInterface conn runDBInterface' =
-  return IDataBase { queryAllUsers     = queryAllUsers'     conn
-                   , queryUser         = queryUser'         conn
-                   , insertUser        = insertUser'        conn
-                   , updateUser        = updateUser'        conn
-                   , deleteUser        = deleteUser'        conn
+  return IDataBase { queryAllUsers     = queryAllUsers'           conn
+                   , queryUser         = queryUser'               conn
+                   , insertUser        = insertUser'              conn
+                   , updateUser        = updateUser'              conn
+                   , deleteUser        = deleteUser'              conn
 
-                   , queryWebsites     = queryWebsites'     conn
-                   , queryWebsite      = queryWebsite'      conn
-                   , insertWebsite     = insertWebsite'     conn
-                   , updateWebsite     = updateWebsite'     conn
-                   , deleteWebsite     = deleteWebsite'     conn
+                   , queryWebsites     = queryWebsites'           conn
+                   , queryWebsite      = queryWebsite'            conn
+                   , insertWebsite     = insertWebsite'           conn
+                   , updateWebsite     = updateWebsite'           conn
+                   , deleteWebsite     = deleteWebsite'           conn
 
-                   , queryCredentials  = queryCredentials'  conn
-                   , insertCredentials = insertCredentials' conn
-                   , updateCredentials = updateCredentials' conn
-                   , deleteCredentials = deleteCredentials' conn
+                   , queryAllUserCredentials = queryAllUserCredentials' conn
+                   , queryCredentials        = queryCredentials'        conn
+                   , insertCredentials       = insertCredentials'       conn
+                   , updateCredentials       = updateCredentials'       conn
+                   , deleteCredentials       = deleteCredentials'       conn
+
                    , runDBI           = runDBInterface'
                    }
 
@@ -178,25 +180,29 @@ deleteWebsite' = undefined
 -----------------------------------------------------
 ---- | Credentials
 -----------------------------------------------------
-queryCredentials' :: Connection -> UserId -> WebsiteId -> PGDB [Credentials]
-queryCredentials' = undefined
+queryAllUserCredentials' :: Connection -> UserId -> PGDB [Credentials]
+queryAllUserCredentials' = undefined
+
+queryCredentials'  :: Connection -> CredentialsId -> PGDB Credentials
+queryCredentials'   = undefined
 
 insertCredentials' :: Connection
                    -> UserId
+                   -> WebsiteId
                    -> EncryptedPassword
                    -> WebUsername
                    -> PGDB CredentialsId
-insertCredentials' = undefined
+insertCredentials'  = undefined
 
 updateCredentials' :: Connection
                    -> CredentialsId
                    -> EncryptedPassword
                    -> WebUsername
                    -> PGDB ()
-updateCredentials' = undefined
+updateCredentials'  = undefined
 
 deleteCredentials' :: Connection -> CredentialsId -> PGDB ()
-deleteCredentials' = undefined
+deleteCredentials'  = undefined
 
 -----------------------------------------------------
 -- | Helper Funcitons
