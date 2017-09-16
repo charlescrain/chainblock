@@ -1,5 +1,6 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE RankNTypes          #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module DB.DBSpec (main, spec) where
 
@@ -122,25 +123,27 @@ userSpec dbi =
 websiteSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
 websiteSpec dbi = describe "Website Spec" $ do
     it "should query all websites for a user" $ do
-      pendingWith "Under consruction"
-      let username' = Username "queryAllWebsites"
-      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ username'
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
       isRight eResInsertUser `shouldBe` True
 
       let Right uId' = eResInsertUser
-          webdetails = [ (WebsiteURL "webURL1", WebsiteName "webname1")
-                       , (WebsiteURL "webURL2", WebsiteName "webname2")
-                       , (WebsiteURL "webURL3", WebsiteName "webname3")
-                       , (WebsiteURL "webURL4", WebsiteName "webname4") ]
-      eResInserts <- mapM (runExceptT . runDBI dbi . uncurry (insertWebsite dbi uId'))
-                          webdetails
+          siteIndexes = [1..5]
+      testWebURLs :: [WebsiteURL] <- mapM (const (generate arbitrary)) siteIndexes
+      testWebNames :: [WebsiteName] <- mapM (const (generate arbitrary)) siteIndexes
+
+      eResInserts <- mapM (\i ->
+                              let webURL = testWebURLs !! i
+                                  webName = testWebNames !! i
+                              in runExceptT . runDBI dbi $ insertWebsite dbi uId' webURL webName )
+                           siteIndexes
       mapM_ (shouldBe True . isRight)  eResInserts
 
       eResQuery <- runExceptT . runDBI dbi $ queryWebsites dbi uId'
       isRight eResQuery `shouldBe` True
 
       let Right ress = eResQuery
-          inDB = map (\ w -> (websiteURL w, websiteName w) `elem` webdetails)
+          inDB = map (\ w -> websiteURL w `elem` testWebURLs && websiteName w `elem` testWebNames)
                      ress
       mapM_ (shouldBe True) inDB
     it "should create a website and query the website" $ do
@@ -149,8 +152,8 @@ websiteSpec dbi = describe "Website Spec" $ do
       isRight eResInsertUser `shouldBe` True
 
       let Right uId' = eResInsertUser
-          weburl = WebsiteURL "http://oneringtorule.com"
-          webname = WebsiteName "OneRingtoRule"
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
       eResInsert <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
       isRight eResInsert `shouldBe` True
 
@@ -167,16 +170,54 @@ websiteSpec dbi = describe "Website Spec" $ do
       eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
       isRight eResInsertUser `shouldBe` True
 
-      eResInsert <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
-      isLeft eResInsert `shouldBe` True
-    it "should update a website with a new details" $
-      pendingWith "Un-implemented"
-    it "should fail updating non-existent website" $
-      pendingWith "Un-implemented"
-    it "should delete a website" $
-      pendingWith "Un-implemented"
-    it "should fail delete non-existent website" $
-      pendingWith "Un-implemented"
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsert `shouldBe` True
+
+      eResInsertFail <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsertFail `shouldBe` True
+    it "should update a website with a new details" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsert `shouldBe` True
+
+      let Right webId' = eResInsert
+      weburl' <- generate arbitrary
+      webname' <- generate arbitrary
+      eResUpdate <- runExceptT . runDBI dbi $ updateWebsite dbi webId' weburl' webname'
+      isRight eResUpdate `shouldBe` True
+    it "should fail updating non-existent website" $ do
+      webId' <- generate arbitrary
+      weburl' <- generate arbitrary
+      webname' <- generate arbitrary
+      eResUpdate <- runExceptT . runDBI dbi $ updateWebsite dbi webId' weburl' webname'
+      isRight eResUpdate `shouldBe` False
+    it "should delete a website" $ do
+      testUsername <- generate arbitrary
+      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
+      isRight eResInsertUser `shouldBe` True
+
+      let Right uId' = eResInsertUser
+      weburl <- generate arbitrary
+      webname <- generate arbitrary
+      eResInsert <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
+      isRight eResInsert `shouldBe` True
+
+      let Right webId' = eResInsert
+      eResDelete <- runExceptT . runDBI dbi $ deleteWebsite dbi webId'
+      isRight eResDelete `shouldBe` True
+    it "should fail delete non-existent website" $ do
+      webId' <- generate arbitrary
+      eResDelete <- runExceptT . runDBI dbi $ deleteWebsite dbi webId'
+      isRight eResDelete `shouldBe` False
 
 credntialsSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
 credntialsSpec _dbi = describe "Credentials Spec" $ do
