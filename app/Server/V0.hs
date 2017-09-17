@@ -32,14 +32,18 @@ postUserEntryPoint _ = throwError $ err500 {errBody="postUserEntryPoint ** Under
 
 websiteEntryPoints :: UserId -> ServerT WebsiteSubRouteAPI (AppT m m')
 websiteEntryPoints uId = getWebsitesEntryPoint uId
-                :<|> postWebsiteEntryPoint uId
-                :<|> getWebsiteCredentialsEntryPoint uId
+                    :<|> postWebsiteEntryPoint uId
+                    :<|> postCredentialsEntrypoint uId
+                    :<|> getWebsiteCredentialsEntryPoint uId
 
 getWebsitesEntryPoint :: UserId -> AppT m m' [WebsiteDetails]
 getWebsitesEntryPoint _ = throwError err500 {errBody="getWebsitesEntryPoint ** Under Constructions..Nothing to see here"}
 
-postWebsiteEntryPoint :: UserId -> PostMasterKey -> AppT m m' WebsiteId
+postWebsiteEntryPoint :: UserId -> PostWebsite -> AppT m m' WebsiteId
 postWebsiteEntryPoint _ _ = throwError err500 {errBody="postWebsiteEntryPoint ** Under Constructions..Nothing to see here"}
+
+postCredentialsEntrypoint :: UserId -> WebsiteId -> PostCredentials -> AppT m m' ()
+postCredentialsEntrypoint _ _ _ = throwError err500 {errBody="postCredentialsEntrypoint ** Under Constructions..Nothing to see here"}
 
 getWebsiteCredentialsEntryPoint :: UserId -> WebsiteId -> PostMasterKey -> AppT m m' Website
 getWebsiteCredentialsEntryPoint _ _ _ = throwError err500 {errBody="getWebsiteCredentialsEntryPoint ** Under Constructions..Nothing to see here"}

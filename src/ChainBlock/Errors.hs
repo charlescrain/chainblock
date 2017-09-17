@@ -10,8 +10,8 @@ data CBError = DatabaseError Text Text DB_Errors
              | Ex            SomeException
   deriving (Show)
 data DB_Errors  = NoResults
-                 | DuplicateKeyViolation
-                 | NoRowsAltered
+                | DuplicateKeyViolation
+                | NoRowsAltered
   deriving (Show)
 data BZ_Errors  = BZERROR
   deriving (Show)

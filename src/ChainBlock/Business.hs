@@ -4,27 +4,34 @@
 
 module ChainBlock.Business where
 
-import           Control.Monad.Error.Class      (MonadError)
-import           Control.Monad.IO.Class         (MonadIO)
-import           Control.Monad.Reader           (MonadReader, ReaderT,
-                                                 runReaderT)
-import           Servant                        (Handler)
+import           Control.Monad.Error.Class     (MonadError)
+import           Control.Monad.Except          (ExceptT (..), runExceptT,
+                                                throwError)
+import           Control.Monad.IO.Class        (MonadIO)
+import           Control.Monad.Reader          (MonadReader, ReaderT,
+                                                runReaderT)
+import           Servant                       (Handler)
 
-import           ChainBlock.Business.Interfaces
+import           ChainBlock.Business.Interface
 import           ChainBlock.Business.Types
 import           ChainBlock.DB.Interface
+import           ChainBlock.Errors
+import           ChainBlock.Logging
 
 
 businessInterface :: (forall a . BZ a -> m a )
-                  -> (IDataBase dbMonad BZ)
+                  -> IDataBase dbMonad BZ
                   -> IO (IBusinessFunctions BZ m)
-businessInterface runBusinessInterface' _ = do
+businessInterface runBusinessInterface' _ =
   return
     IBusinessFunctions { getUsers = getUsers'
                        , postUser = postUser'
-                       , getWebsites = getWebsites'
-                       , getWebsiteCredentials  = getWebsiteCredentials'
-                       , postWebsites = postWebsites'
+
+                       , getWebsites     = getWebsites'
+                       , postWebsites    = postWebsites'
+                       , getCredentials  = getCredentials'
+                       , postCredentials = postCredentials'
+
                        , runBusinessInterface = runBusinessInterface'
                        }
 
@@ -32,11 +39,18 @@ businessInterface runBusinessInterface' _ = do
 -- | runBusinessInterface Functions
 -----------------------------------------------------
 
-runBusinessInterfaceIO :: BZ a -> IO a
+runBusinessInterfaceIO :: BZ a -> (ExceptT CBError IO) a
 runBusinessInterfaceIO = undefined
 
 runBusinessInterfaceHandler :: BZ a -> Handler a
 runBusinessInterfaceHandler = undefined
+
+-----------------------------------------------------
+-- | runDBInterface Functions
+-----------------------------------------------------
+
+runPGDBInterfaceBZ :: PGDB a -> BZ a
+runPGDBInterfaceBZ = undefined
 
 -----------------------------------------------------
 -- | Interface Implementation
@@ -51,13 +65,18 @@ postUser' = undefined
 getWebsites' :: UserId -> BZ [WebsiteDetails]
 getWebsites' = undefined
 
-getWebsiteCredentials' :: UserId
-                       -> WebsiteId
-                       -> PostMasterKey
-                       -> BZ Website
-getWebsiteCredentials' = undefined
-
-postWebsites' :: UserId -> PostMasterKey -> BZ WebsiteId
+postWebsites' :: UserId -> PostWebsite -> BZ WebsiteId
 postWebsites' = undefined
 
+getCredentials' :: UserId
+                -> WebsiteId
+                -> PostMasterKey
+                -> BZ Website
+getCredentials' = undefined
 
+
+postCredentials' :: UserId
+                -> WebsiteId
+                -> PostCredentials
+                -> m ()
+postCredentials' = undefined

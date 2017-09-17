@@ -4,11 +4,11 @@ module Config.AppConfig
   , Environment (..)
   ) where
 
-import           Control.Monad.Error.Class      (MonadError)
-import           Control.Monad.IO.Class         (MonadIO)
-import           System.Environment             (getEnv)
+import           Control.Monad.Error.Class     (MonadError)
+import           Control.Monad.IO.Class        (MonadIO)
+import           System.Environment            (getEnv)
 
-import           ChainBlock.Business.Interfaces
+import           ChainBlock.Business.Interface
 import           Config.Environment
 
 data AppConfig m m' = AppConfig

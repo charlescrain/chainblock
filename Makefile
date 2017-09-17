@@ -29,3 +29,7 @@ test-db:
 		PG_USER=postgres \
 		PG_PASSWORD=password \
 		stack test chainblock --test-arguments="--match=DB"
+
+test-business:
+	ENV=Test \
+		stack test chainblock --test-arguments="--match=Business"

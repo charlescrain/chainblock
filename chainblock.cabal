@@ -37,7 +37,7 @@ library
   hs-source-dirs:       src
   exposed-modules:      ChainBlock.API.Types
                       , ChainBlock.Business
-                      , ChainBlock.Business.Interfaces
+                      , ChainBlock.Business.Interface
                       , ChainBlock.Business.Types
                       , ChainBlock.Crypto
                       , ChainBlock.Crypto.Types

@@ -33,7 +33,6 @@ import           Opaleye.QueryArr              (Query)
 import           Opaleye.RunQuery              (runQuery)
 import           System.Environment            (getEnv)
 
-import           ChainBlock.Business.Types     (BZ)
 import           ChainBlock.DB.Interface
 import           ChainBlock.DB.Postgres.Setup  (createDBIfNeeded)
 import           ChainBlock.DB.Postgres.Tables
@@ -71,9 +70,6 @@ databaseInterface conn runDBInterface' =
 -----------------------------------------------------
 -- | runDBInterface Functions
 -----------------------------------------------------
-
-runDBInterfaceBZ :: PGDB a -> BZ a
-runDBInterfaceBZ = undefined
 
 runDBInterfaceIO :: PGDB a -> (ExceptT CBError IO) a
 runDBInterfaceIO = ExceptT . flip runLoggingT logMsg  . runExceptT . runPGDB

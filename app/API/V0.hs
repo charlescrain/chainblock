@@ -19,8 +19,19 @@ type UserSubRouteAPI =
 
 type WebsiteSubRouteAPI =
         "websites" :> Get '[JSONAPI] [WebsiteDetails]
-   :<|> "websites" :> ReqBody '[JSONAPI] PostMasterKey :> Post '[JSONAPI] WebsiteId
-   :<|> "websites" :> "get" :> Capture "id" WebsiteId :> ReqBody '[JSONAPI] PostMasterKey :> Post '[JSONAPI] Website
+   :<|> "websites"
+      :> ReqBody '[JSONAPI] PostWebsite
+      :> Post '[JSONAPI] WebsiteId
+   :<|> "websites"
+      :> Capture "id" WebsiteId
+      :> "credentials"
+      :> ReqBody '[JSONAPI] PostCredentials
+      :> Post '[JSONAPI] ()
+   :<|> "websites"
+      :> "get"
+      :> Capture "id" WebsiteId
+      :> ReqBody '[JSONAPI] PostMasterKey
+      :> Post '[JSONAPI] Website
 
 api :: Proxy API
 api = Proxy
