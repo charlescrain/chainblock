@@ -273,16 +273,78 @@ updateWebsite' :: Connection
                -> WebsiteURL
                -> WebsiteName
                -> PGDB ()
-updateWebsite' = undefined
+updateWebsite' conn
+               (WebsiteId wId')
+               (WebsiteURL wURL)
+               (WebsiteName wName) = do
+  let src = "updateWebsite'"
+  $logInfoS src ("updating website with id " <> pack (show wId'))
+  updatedRowCount <- catch
+         (liftIO $ runUpdate
+                     conn
+                     websiteTable
+                     (\ (_,_,_,uId') -> ( Nothing
+                                        , P.pgStrictText wURL
+                                        , P.pgStrictText wName
+                                        , uId'))
+                     (\ (id',_,_,_) -> (id' .==) . P.pgInt4 $ fromInteger wId'))
+         (\(err :: SqlError) -> do
+             $logErrorS src ("SqlError " <> (pack . show $ err))
+             throwError . Ex . SomeException $ err)
+  $logDebugS src ("Updated " <> pack (show updatedRowCount) <> "rows.")
+  if updatedRowCount == 0
+    then do
+        let errorMsg = pack ("No record with id found. id=" <> show wId' )
+        $logErrorS src errorMsg
+        throwError $ DatabaseError src errorMsg NoRowsAltered
+    else return ()
 
 deleteWebsite' :: Connection -> WebsiteId -> PGDB ()
-deleteWebsite' = undefined
+deleteWebsite' conn (WebsiteId wId') = do
+  let src = "deleteWebsite'"
+  $logInfoS src ("deleting website with id " <> pack (show wId'))
+  deletedRows <- catch
+         (liftIO $ runDelete
+                     conn
+                     websiteTable
+                     (\ (id',_,_,_) -> (id' .==) . P.pgInt4 $ fromInteger wId'))
+         (\(err :: SqlError) -> do
+             $logErrorS src ("SqlError " <> (pack . show $ err))
+             throwError . Ex . SomeException $ err)
+  if deletedRows == 0
+    then do
+        let errorMsg = pack ("No record with id found. id=" <> show wId' )
+        $logErrorS src errorMsg
+        throwError $ DatabaseError src errorMsg NoRowsAltered
+    else return ()
 
 -----------------------------------------------------
 ---- | Credentials
 -----------------------------------------------------
 queryAllUserCredentials' :: Connection -> UserId -> PGDB [Credentials]
-queryAllUserCredentials' = undefined
+queryAllUserCredentials' conn (UserId uId') = do
+  let src = "queryAllUserCredentials'"
+  $logInfoS src $ pack ("querying credentials for user with id: " <> show uId')
+  rows <- catch (liftIO $ runQuery conn queryCred)
+    (\ (err :: SomeException) -> throwError . Ex $ err)
+  return $ map (\ ( cId :: Int
+                  , wName :: Text
+                  , ep :: ByteString
+                  , wId' :: Int
+                  , userId' :: Int) ->
+                    Credentials { credId = CredentialsId . toInteger . fromIntegral $ cId
+                                , username = WebUsername wName
+                                , password = EncryptedPassword ep
+                                , webId = WebsiteId . toInteger . fromIntegral $ wId'
+                                , credUserId = UserId . toInteger . fromIntegral $ userId'
+                                })
+               rows
+  where
+    queryCred :: Query (Column P.PGInt4, Column P.PGText, Column P.PGBytea, Column P.PGInt4, Column P.PGInt4)
+    queryCred = proc () -> do
+      row@(_,_,_,_,uId'') <- queryTable credentialsTable -< ()
+      restrict -< (P.pgInt4 (fromIntegral uId') .== uId'')
+      returnA -< row
 
 queryCredentials'  :: Connection -> CredentialsId -> PGDB Credentials
 queryCredentials' conn (CredentialsId cId') = do
@@ -356,10 +418,50 @@ updateCredentials' :: Connection
                    -> EncryptedPassword
                    -> WebUsername
                    -> PGDB ()
-updateCredentials'  = undefined
-
+updateCredentials' conn
+                   (CredentialsId cId')
+                   (EncryptedPassword ep)
+                   (WebUsername wName) = do
+  let src = "updateCredentials'"
+  $logInfoS src ("updating credentials with id " <> pack (show cId'))
+  updatedRowCount <- catch
+         (liftIO $ runUpdate
+                     conn
+                     credentialsTable
+                     (\ (_,_,_,wId',uId') -> ( Nothing
+                                             , P.pgStrictText wName
+                                             , P.pgStrictByteString ep
+                                             , wId'
+                                             , uId'))
+                     (\ (id',_,_,_,_) -> (id' .==) . P.pgInt4 $ fromInteger cId'))
+         (\(err :: SqlError) -> do
+             $logErrorS src ("SqlError " <> (pack . show $ err))
+             throwError . Ex . SomeException $ err)
+  $logDebugS src ("Updated " <> pack (show updatedRowCount) <> "rows.")
+  if updatedRowCount == 0
+    then do
+        let errorMsg = pack ("No record with id found. id=" <> show cId' )
+        $logErrorS src errorMsg
+        throwError $ DatabaseError src errorMsg NoRowsAltered
+    else return ()
 deleteCredentials' :: Connection -> CredentialsId -> PGDB ()
-deleteCredentials'  = undefined
+deleteCredentials' conn (CredentialsId cId') = do
+  let src = "deleteCredentials'"
+  $logInfoS src ("deleting credentials with id " <> pack (show cId'))
+  deletedRows <- catch
+         (liftIO $ runDelete
+                     conn
+                     credentialsTable
+                     (\ (id',_,_,_,_) -> (id' .==) . P.pgInt4 $ fromInteger cId'))
+         (\(err :: SqlError) -> do
+             $logErrorS src ("SqlError " <> (pack . show $ err))
+             throwError . Ex . SomeException $ err)
+  if deletedRows == 0
+    then do
+        let errorMsg = pack ("No record with id found. id=" <> show cId' )
+        $logErrorS src errorMsg
+        throwError $ DatabaseError src errorMsg NoRowsAltered
+    else return ()
 
 -----------------------------------------------------
 -- | Helper Funcitons
