@@ -11,6 +11,7 @@ import           Data.Monoid               ((<>))
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
 import qualified Data.Text.Encoding        as T
+import           Data.Word                 (Word64)
 import           GHC.Generics
 import           Test.QuickCheck.Arbitrary
 import           Test.QuickCheck.Gen
@@ -35,7 +36,10 @@ instance Arbitrary User where
 
 
 newtype UserId = UserId Integer
-  deriving (Show, Eq, Ord, Generic, Arbitrary)
+  deriving (Show, Eq, Ord, Generic)
+instance Arbitrary UserId where
+  arbitrary = (UserId . fromIntegral) <$> (chooseAny :: Gen Word64)
+
 
 newtype Username = Username Text
   deriving (Show, Eq, Ord, Generic)
@@ -61,7 +65,9 @@ instance Arbitrary Credentials where
                           <*> arbitrary
 
 newtype CredentialsId = CredentialsId  {unCredentialsId :: Integer}
-  deriving (Show, Eq, Ord, Generic, Arbitrary)
+  deriving (Show, Eq, Ord, Generic)
+instance Arbitrary CredentialsId where
+  arbitrary = (CredentialsId . fromIntegral) <$> (chooseAny :: Gen Word64)
 
 newtype EncryptedPassword = EncryptedPassword ByteString
   deriving (Show, Eq, Ord, Generic)
@@ -78,7 +84,9 @@ data Website =
   deriving (Show, Eq, Ord, Generic)
 
 newtype WebsiteId   = WebsiteId   {unWebsiteId   :: Integer}
-  deriving (Show, Eq, Ord, Generic, Arbitrary)
+  deriving (Show, Eq, Ord, Generic)
+instance Arbitrary WebsiteId where
+  arbitrary = (WebsiteId . fromIntegral) <$> (chooseAny :: Gen Word64)
 
 newtype WebUsername = WebUsername {unWebUsername :: Text}
   deriving (Show, Eq, Ord, Generic)

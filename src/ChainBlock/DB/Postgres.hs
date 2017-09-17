@@ -16,6 +16,7 @@ import           Control.Monad.Except          (ExceptT (..), runExceptT,
                                                 throwError)
 import           Control.Monad.IO.Class        (liftIO)
 import           Control.Monad.Logger
+import           Data.ByteString               (ByteString)
 import           Data.ByteString.Lazy          (toStrict)
 import           Data.ByteString.Lazy.UTF8     (fromString)
 import           Data.Monoid                   ((<>))
@@ -150,7 +151,7 @@ updateUser' ::  Connection -> UserId -> Username -> PGDB ()
 updateUser' conn (UserId uId') (Username un) = do
   let src = "updateUser'"
   $logInfoS src ("updating user " <> un)
-  updatedRows <- catch
+  updatedRowCount <- catch
          (liftIO $ runUpdate
                      conn
                      userTable
@@ -159,7 +160,8 @@ updateUser' conn (UserId uId') (Username un) = do
          (\(err :: SqlError) -> do
              $logErrorS src ("SqlError " <> (pack . show $ err))
              throwError . Ex . SomeException $ err)
-  if updatedRows == 0
+  $logDebugS src ("Updated " <> pack (show updatedRowCount) <> "rows.")
+  if updatedRowCount == 0
     then do
         let errorMsg = pack ("No record with id found. id=" <> show uId' )
         $logErrorS src errorMsg
@@ -190,17 +192,81 @@ deleteUser' conn (UserId uId') = do
 -----------------------------------------------------
 
 queryWebsites' :: Connection -> UserId -> PGDB [Website]
-queryWebsites' = undefined
+queryWebsites' conn (UserId uId') = do
+  let src = "queryWebsites'"
+  $logInfoS src $ pack ("querying websites for user with id: " <> show uId')
+  rows <- catch (liftIO $ runQuery conn queryWeb)
+    (\ (err :: SomeException) -> throwError . Ex $ err)
+  return $ map (\(wId :: Int, wURL :: Text, wName :: Text, userId' :: Int) ->
+                    Website { websiteURL  = WebsiteURL wURL
+                            , websiteName = WebsiteName wName
+                            , websiteId   = WebsiteId . toInteger . fromIntegral $ wId
+                            , userId      = UserId . toInteger . fromIntegral $ userId'
+                            })
+               rows
+  where
+    queryWeb :: Query (Column P.PGInt4, Column P.PGText, Column P.PGText, Column P.PGInt4)
+    queryWeb = proc () -> do
+      row@(_,_,_,uId'') <- queryTable websiteTable -< ()
+      restrict -< (P.pgInt4 (fromIntegral uId') .== uId'')
+      returnA -< row
 
 queryWebsite' :: Connection -> WebsiteId -> PGDB Website
-queryWebsite' = undefined
+queryWebsite' conn (WebsiteId wId') = do
+  let src = "queryWebsite'"
+  $logInfoS src ("running on websiteId " <> pack (show wId'))
+  rows <- catch (liftIO $ runQuery conn queryWebsiteById)
+                (\ (err :: SomeException) -> throwError . Ex $ err)
+  case rows of
+      [( wId' :: Int
+       , wURL' :: Text
+       , wName' :: Text
+       , uId' :: Int)]  -> return Website { websiteURL  = WebsiteURL wURL'
+                                          , websiteName = WebsiteName wName'
+                                          , websiteId   = WebsiteId . toInteger . fromIntegral $ wId'
+                                          , userId      = UserId . toInteger . fromIntegral $ uId'
+                                          }
+      [] -> do
+        let errorMsg = "0 rows found for websiteId " <> pack (show wId')
+        $logWarnS src errorMsg
+        throwError $ DatabaseError src errorMsg NoResults
+      _ -> do
+        let errorMsg = "found multiple rows for websiteId " <> pack (show wId')
+        $logErrorS src errorMsg
+        throwError . Ex . SomeException $ DatabaseEx
+             src
+             errorMsg
+             NotUnique
+  where
+    queryWebsiteById :: Query (Column P.PGInt4, Column P.PGText, Column P.PGText, Column P.PGInt4)
+    queryWebsiteById = proc () -> do
+      row@(wid',_,_,_) <- queryTable websiteTable -< ()
+      restrict -< (P.pgInt4 (fromIntegral wId') .== wid')
+      returnA -< row
 
 insertWebsite' :: Connection
                -> UserId
                -> WebsiteURL
                -> WebsiteName
                -> PGDB WebsiteId
-insertWebsite' = undefined
+insertWebsite' conn (UserId uId') (WebsiteURL wURL) (WebsiteName wName) = do
+  let src = "insertWebsite'"
+      insertFields = [(Nothing, P.pgStrictText wURL, P.pgStrictText wName, P.pgInt4 . fromIntegral $ uId')]
+  $logInfoS src ( "inserting website,"
+               <> " userId: " <> (pack . show $ uId')
+               <> " websiteURL: " <> wURL
+               <> " websiteName: " <> wName)
+
+  -- TODO: use case statement
+  [( wId' :: Int
+   , _ :: Text
+   , _ :: Text
+   , _ :: Int)] <- catch
+                      (liftIO $ runInsertManyReturning conn websiteTable insertFields id)
+                      (\(err :: SqlError) -> do
+                          $logErrorS src ("SqlError " <> (pack . show $ err))
+                          throwError . Ex . SomeException $ err)
+  return (WebsiteId . toInteger . fromIntegral $ wId')
 
 updateWebsite' :: Connection
                -> WebsiteId
@@ -219,7 +285,39 @@ queryAllUserCredentials' :: Connection -> UserId -> PGDB [Credentials]
 queryAllUserCredentials' = undefined
 
 queryCredentials'  :: Connection -> CredentialsId -> PGDB Credentials
-queryCredentials'   = undefined
+queryCredentials' conn (CredentialsId cId') = do
+  let src = "queryCredentials'"
+  $logInfoS src ("running on credentialsId " <> pack (show cId'))
+  rows <- catch (liftIO $ runQuery conn queryCredneitalsById)
+                (\ (err :: SomeException) -> throwError . Ex $ err)
+  case rows of
+      [( cId'' :: Int
+       , wUsername' :: Text
+       , ePass' :: ByteString
+       , wId' :: Int
+       , uId' :: Int)]  -> return Credentials { credId = CredentialsId . toInteger . fromIntegral $ cId''
+                                              , username = WebUsername wUsername'
+                                              , password = EncryptedPassword ePass'
+                                              , webId = WebsiteId . toInteger . fromIntegral $ wId'
+                                              , credUserId = UserId . toInteger . fromIntegral $ uId'
+                                              }
+      [] -> do
+        let errorMsg = "0 rows found for CredentialsId " <> pack (show cId')
+        $logWarnS src errorMsg
+        throwError $ DatabaseError src errorMsg NoResults
+      _ -> do
+        let errorMsg = "found multiple rows for CredentialsId " <> pack (show cId')
+        $logErrorS src errorMsg
+        throwError . Ex . SomeException $ DatabaseEx
+             src
+             errorMsg
+             NotUnique
+  where
+    queryCredneitalsById :: Query (Column P.PGInt4, Column P.PGText, Column P.PGBytea, Column P.PGInt4, Column P.PGInt4)
+    queryCredneitalsById = proc () -> do
+      row@(cid',_,_,_,_) <- queryTable credentialsTable -< ()
+      restrict -< (P.pgInt4 (fromIntegral cId') .== cid')
+      returnA -< row
 
 insertCredentials' :: Connection
                    -> UserId
@@ -227,7 +325,31 @@ insertCredentials' :: Connection
                    -> EncryptedPassword
                    -> WebUsername
                    -> PGDB CredentialsId
-insertCredentials'  = undefined
+insertCredentials' conn
+                   (UserId uId')
+                   (WebsiteId wId')
+                   (EncryptedPassword ePass)
+                   (WebUsername wUsername) = do
+  let src = "insertCredentials'"
+      insertFields = [( Nothing
+                      , P.pgStrictText wUsername
+                      , P.pgStrictByteString ePass
+                      , P.pgInt4 . fromIntegral $ wId'
+                      , P.pgInt4 . fromIntegral $ uId')]
+  $logInfoS src ( "inserting credentials,"
+               <> " userId: " <> (pack . show $ uId')
+               <> " websiteId: " <> (pack . show $ wId')
+               <> " websiteURL: " <> wUsername)
+  [( cId' :: Int
+   , _ :: Text
+   , _ :: ByteString
+   , _ :: Int
+   , _ :: Int)] <- catch
+                      (liftIO $ runInsertManyReturning conn credentialsTable insertFields id)
+                      (\(err :: SqlError) -> do
+                          $logErrorS src ("SqlError " <> (pack . show $ err))
+                          throwError . Ex . SomeException $ err)
+  return (CredentialsId . toInteger . fromIntegral $ cId')
 
 updateCredentials' :: Connection
                    -> CredentialsId

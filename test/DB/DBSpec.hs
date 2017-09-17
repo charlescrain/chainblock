@@ -51,7 +51,7 @@ userSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
 userSpec dbi =
   describe "User Spec" $ do
     it "should query all created users" $ do
-      usernames <- mapM (\ _ -> generate arbitrary) [1..5]
+      usernames <- mapM (\ _ -> generate arbitrary) [0..4]
       eResInserts <- mapM (runExceptT . runDBI dbi . insertUser dbi)
                           usernames
       mapM_ (shouldBe True . isRight)  eResInserts
@@ -102,8 +102,6 @@ userSpec dbi =
       testUsername <- generate arbitrary
       nonExistentId <- generate arbitrary
       eResUpdate <- runExceptT . runDBI dbi $ updateUser dbi nonExistentId testUsername
-      print "==============================================="
-      print eResUpdate
       isLeft eResUpdate `shouldBe` True
     it "should create and delete a user" $ do
       testUsername <- generate arbitrary
@@ -116,7 +114,7 @@ userSpec dbi =
     it "should fail delete non-existent user" $ do
       nonExistentId <- generate arbitrary
       eResDelete <- runExceptT . runDBI dbi $ deleteUser dbi nonExistentId
-      isRight eResDelete `shouldBe` False
+      isLeft eResDelete `shouldBe` True
 
 websiteSpec :: IDataBase PGDB (ExceptT CBError IO)  -> Spec
 websiteSpec dbi = describe "Website Spec" $ do
@@ -126,7 +124,7 @@ websiteSpec dbi = describe "Website Spec" $ do
       isRight eResInsertUser `shouldBe` True
 
       let Right uId' = eResInsertUser
-          siteIndexes = [1..5]
+          siteIndexes = [0..4]
       testWebURLs :: [WebsiteURL] <- mapM (const (generate arbitrary)) siteIndexes
       testWebNames :: [WebsiteName] <- mapM (const (generate arbitrary)) siteIndexes
       eResInserts <- mapM (\i ->
@@ -159,23 +157,12 @@ websiteSpec dbi = describe "Website Spec" $ do
       let Right website = eResQuery
       websiteName website `shouldBe` webname
       websiteURL website `shouldBe` weburl
+
     it "should fail querying a non-existing website" $ do
       webId' <- generate arbitrary
       eResQuery <- runExceptT . runDBI dbi . queryWebsite dbi $ webId'
       isLeft eResQuery `shouldBe` True
-    it "should fail inserting existing website" $ do
-      testUsername <- generate arbitrary
-      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
-      isRight eResInsertUser `shouldBe` True
 
-      let Right uId' = eResInsertUser
-      weburl <- generate arbitrary
-      webname <- generate arbitrary
-      eResInsert <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
-      isRight eResInsert `shouldBe` True
-
-      eResInsertFail <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
-      isRight eResInsertFail `shouldBe` True
     it "should update a website with a new details" $ do
       testUsername <- generate arbitrary
       eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
@@ -192,12 +179,14 @@ websiteSpec dbi = describe "Website Spec" $ do
       webname' <- generate arbitrary
       eResUpdate <- runExceptT . runDBI dbi $ updateWebsite dbi webId' weburl' webname'
       isRight eResUpdate `shouldBe` True
+
     it "should fail updating non-existent website" $ do
       webId' <- generate arbitrary
       weburl' <- generate arbitrary
       webname' <- generate arbitrary
       eResUpdate <- runExceptT . runDBI dbi $ updateWebsite dbi webId' weburl' webname'
       isRight eResUpdate `shouldBe` False
+
     it "should delete a website" $ do
       testUsername <- generate arbitrary
       eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
@@ -212,6 +201,7 @@ websiteSpec dbi = describe "Website Spec" $ do
       let Right webId' = eResInsert
       eResDelete <- runExceptT . runDBI dbi $ deleteWebsite dbi webId'
       isRight eResDelete `shouldBe` True
+
     it "should fail delete non-existent website" $ do
       webId' <- generate arbitrary
       eResDelete <- runExceptT . runDBI dbi $ deleteWebsite dbi webId'
@@ -231,7 +221,7 @@ credntialsSpec dbi = describe "Credentials Spec" $ do
       isRight eResInsertWeb `shouldBe` True
 
       let Right webId' = eResInsertWeb
-          credIndexes = [1..5]
+          credIndexes = [0..4]
       encryptedPasswords  :: [EncryptedPassword] <- mapM (const (generate arbitrary)) credIndexes
       webUserNames :: [WebUsername] <- mapM (const (generate arbitrary)) credIndexes
       eResInserts <- mapM (\i ->
@@ -279,29 +269,6 @@ credntialsSpec dbi = describe "Credentials Spec" $ do
       credId' <- generate arbitrary
       eResQuery <- runExceptT . runDBI dbi . queryCredentials dbi $ credId'
       isLeft eResQuery `shouldBe` True
-    it "should fail inserting existing credentials" $ do
-      testUsername <- generate arbitrary
-      eResInsertUser <- runExceptT . runDBI dbi . insertUser dbi $ testUsername
-      isRight eResInsertUser `shouldBe` True
-
-      let Right uId' = eResInsertUser
-      weburl <- generate arbitrary
-      webname <- generate arbitrary
-      eResInsertWeb <- runExceptT . runDBI dbi $ insertWebsite dbi uId' weburl webname
-      isRight eResInsertWeb `shouldBe` True
-
-      let Right webId' = eResInsertWeb
-      encryptedPassword <- generate arbitrary
-      webUserName <- generate arbitrary
-      eResInsert <- runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' encryptedPassword webUserName
-      isRight eResInsert `shouldBe` True
-
-      let Right cId' = eResInsert
-      eResQuery <- runExceptT . runDBI dbi $ queryCredentials dbi cId'
-      isRight eResQuery `shouldBe` True
-
-      eResInsertFail <- runExceptT . runDBI dbi $ insertCredentials dbi uId' webId' encryptedPassword webUserName
-      isLeft eResInsertFail `shouldBe` True
 
     it "should update a credentials with a new details" $ do
       testUsername <- generate arbitrary
@@ -354,7 +321,7 @@ credntialsSpec dbi = describe "Credentials Spec" $ do
       eResDelete <- runExceptT . runDBI dbi $ deleteCredentials dbi cId'
       isRight eResDelete `shouldBe` True
 
-    it "should fail delete non-existent credentials" $ do
+    it "should fail deleting non-existent credentials" $ do
       cId' <- generate arbitrary
       eResDelete <- runExceptT . runDBI dbi $ deleteCredentials dbi cId'
       isLeft eResDelete `shouldBe` True
