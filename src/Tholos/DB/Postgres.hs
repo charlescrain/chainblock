@@ -6,40 +6,38 @@
 {-# LANGUAGE TemplateHaskell     #-}
 {-# LANGUAGE TypeOperators       #-}
 
-module ChainBlock.DB.Postgres where
+module Tholos.DB.Postgres where
 
-import           Control.Arrow                 (returnA)
-import           Control.Monad.Catch           (Exception (..),
-                                                SomeException (..), catch,
-                                                throwM, try)
-import           Control.Monad.Except          (ExceptT (..), runExceptT,
-                                                throwError)
-import           Control.Monad.IO.Class        (liftIO)
+import           Control.Arrow              (returnA)
+import           Control.Monad.Catch        (Exception (..), SomeException (..),
+                                             catch, throwM, try)
+import           Control.Monad.Except       (ExceptT (..), runExceptT,
+                                             throwError)
+import           Control.Monad.IO.Class     (liftIO)
 import           Control.Monad.Logger
-import           Data.ByteString               (ByteString)
-import           Data.ByteString.Lazy          (toStrict)
-import           Data.ByteString.Lazy.UTF8     (fromString)
-import           Data.Monoid                   ((<>))
-import           Data.Text                     hiding (length, map)
-import           Database.PostgreSQL.Simple    (ConnectInfo (..), Connection,
-                                                SqlError (..), close, connect)
-import           Opaleye                       (queryTable, restrict, (.==))
-import           Opaleye.Column                (Column)
-import           Opaleye.Manipulation          (runDelete,
-                                                runInsertManyReturning,
-                                                runUpdate)
-import qualified Opaleye.PGTypes               as P
-import           Opaleye.QueryArr              (Query)
-import           Opaleye.RunQuery              (runQuery)
-import           System.Environment            (getEnv)
+import           Data.ByteString            (ByteString)
+import           Data.ByteString.Lazy       (toStrict)
+import           Data.ByteString.Lazy.UTF8  (fromString)
+import           Data.Monoid                ((<>))
+import           Data.Text                  hiding (length, map)
+import           Database.PostgreSQL.Simple (ConnectInfo (..), Connection,
+                                             SqlError (..), close, connect)
+import           Opaleye                    (queryTable, restrict, (.==))
+import           Opaleye.Column             (Column)
+import           Opaleye.Manipulation       (runDelete, runInsertManyReturning,
+                                             runUpdate)
+import qualified Opaleye.PGTypes            as P
+import           Opaleye.QueryArr           (Query)
+import           Opaleye.RunQuery           (runQuery)
+import           System.Environment         (getEnv)
 
-import           ChainBlock.DB.Interface
-import           ChainBlock.DB.Postgres.Setup  (createDBIfNeeded)
-import           ChainBlock.DB.Postgres.Tables
-import           ChainBlock.DB.Postgres.Types  (PGDB (..))
-import           ChainBlock.DB.Types
-import           ChainBlock.Errors
-import           ChainBlock.Logging
+import           Tholos.DB.Interface
+import           Tholos.DB.Postgres.Setup   (createDBIfNeeded)
+import           Tholos.DB.Postgres.Tables
+import           Tholos.DB.Postgres.Types   (PGDB (..))
+import           Tholos.DB.Types
+import           Tholos.Errors
+import           Tholos.Logging
 
 
 databaseInterface :: Connection

@@ -2,21 +2,20 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
-module ChainBlock.Business where
+module Tholos.Business where
 
-import           Control.Monad.Error.Class     (MonadError)
-import           Control.Monad.Except          (ExceptT (..), runExceptT,
-                                                throwError)
-import           Control.Monad.IO.Class        (MonadIO)
-import           Control.Monad.Reader          (MonadReader, ReaderT,
-                                                runReaderT)
-import           Servant                       (Handler)
+import           Control.Monad.Error.Class (MonadError)
+import           Control.Monad.Except      (ExceptT (..), runExceptT,
+                                            throwError)
+import           Control.Monad.IO.Class    (MonadIO)
+import           Control.Monad.Reader      (MonadReader, ReaderT, runReaderT)
+import           Servant                   (Handler)
 
-import           ChainBlock.Business.Interface
-import           ChainBlock.Business.Types
-import           ChainBlock.DB.Interface
-import           ChainBlock.Errors
-import           ChainBlock.Logging
+import           Tholos.Business.Interface
+import           Tholos.Business.Types
+import           Tholos.DB.Interface
+import           Tholos.Errors
+import           Tholos.Logging
 
 
 businessInterface :: (forall a . BZ a -> m a )

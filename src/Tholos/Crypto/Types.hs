@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module ChainBlock.Crypto.Types where
+module Tholos.Crypto.Types where
 
 import           Data.ByteString (ByteString)
 import           GHC.Generics

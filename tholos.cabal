@@ -1,8 +1,8 @@
-name:                chainblock
+name:                tholos
 version:             0.1.0.0
 -- synopsis:
 -- description:
-homepage:               https://github.com/githubuser/chainblock#readme
+homepage:               https://github.com/githubuser/tholos#readme
 license:                BSD3
 license-file:           LICENSE
 author:                 Charles Crain
@@ -13,7 +13,7 @@ build-type:             Simple
 cabal-version:          >=1.10
 extra-source-files:     README.md
 
-executable chainblock
+executable tholos
   hs-source-dirs:       app
   main-is:              Main.hs
   default-language:     Haskell2010
@@ -21,7 +21,7 @@ executable chainblock
                       , aeson
                       , attoparsec
                       , bytestring
-                      , chainblock
+                      , tholos
                       , http-media
                       , mtl
                       , postgresql-simple
@@ -35,20 +35,20 @@ executable chainblock
 
 library
   hs-source-dirs:       src
-  exposed-modules:      ChainBlock.API.Types
-                      , ChainBlock.Business
-                      , ChainBlock.Business.Interface
-                      , ChainBlock.Business.Types
-                      , ChainBlock.Crypto
-                      , ChainBlock.Crypto.Types
-                      , ChainBlock.DB.Interface
-                      , ChainBlock.DB.Postgres
-                      , ChainBlock.DB.Postgres.Setup
-                      , ChainBlock.DB.Postgres.Tables
-                      , ChainBlock.DB.Postgres.Types
-                      , ChainBlock.DB.Types
-                      , ChainBlock.Errors
-                      , ChainBlock.Logging
+  exposed-modules:      Tholos.API.Types
+                      , Tholos.Business
+                      , Tholos.Business.Interface
+                      , Tholos.Business.Types
+                      , Tholos.Crypto
+                      , Tholos.Crypto.Types
+                      , Tholos.DB.Interface
+                      , Tholos.DB.Postgres
+                      , Tholos.DB.Postgres.Setup
+                      , Tholos.DB.Postgres.Tables
+                      , Tholos.DB.Postgres.Types
+                      , Tholos.DB.Types
+                      , Tholos.Errors
+                      , Tholos.Logging
                       , Config.AppConfig
                       , Config.Environment
 
@@ -88,7 +88,7 @@ test-suite              webapp-test
                       , base
                       , base16-bytestring
                       , bytestring
-                      , chainblock
+                      , tholos
                       , cryptonite
                       , QuickCheck 
                       , hspec

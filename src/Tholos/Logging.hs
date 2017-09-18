@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 
-module ChainBlock.Logging where
+module Tholos.Logging where
 
 import           Control.Monad.Logger
 import qualified Data.ByteString.Char8 as BC

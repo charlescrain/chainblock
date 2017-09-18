@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
 
-module ChainBlock.API.Types where
+module Tholos.API.Types where
 
 import           Data.Aeson
 import           Data.Text       (Text)

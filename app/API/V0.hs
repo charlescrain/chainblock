@@ -7,8 +7,8 @@ module API.V0 where
 import           Servant
 
 import           API.ContentTypes
-import           App.Transformer      (AppT)
-import           ChainBlock.API.Types
+import           App.Transformer  (AppT)
+import           Tholos.API.Types
 
 type API = "v0" :> UserSubRouteAPI
 

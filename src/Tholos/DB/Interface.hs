@@ -4,76 +4,72 @@
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE TypeOperators         #-}
 
-module ChainBlock.DB.Interface where
+module Tholos.DB.Interface where
 
 import           Control.Monad.Catch       (MonadCatch, MonadThrow)
 import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Logger      (MonadLogger)
 
-import           ChainBlock.DB.Types
-import           ChainBlock.Errors         (CBError (..))
+import           Tholos.DB.Types
+import           Tholos.Errors             (CBError (..))
+import           Tholos.Monad              (MonadTholos)
 
 
-class ( MonadError CBError m
-      , MonadThrow m
-      , MonadIO m
-      , MonadCatch m
-      , MonadLogger m
-      ) => DBMonad m
 
 data IDataBase m m'  =
   IDataBase { -- Users
-              queryAllUsers :: (DBMonad m) => m [User]
-            , queryUser     :: (DBMonad m) => Username             -> m User
-            , insertUser    :: (DBMonad m) => Username             -> m UserId
-            , updateUser    :: (DBMonad m) => UserId   -> Username -> m ()
-            , deleteUser    :: (DBMonad m) => UserId               -> m ()
+              queryAllUsers :: (MonadTholos m) => m [User]
+            , queryUser     :: (MonadTholos m) => Username             -> m User
+            , insertUser    :: (MonadTholos m) => Username             -> m UserId
+            , updateUser    :: (MonadTholos m) => UserId   -> Username -> m ()
+            , deleteUser    :: (MonadTholos m) => UserId               -> m ()
 
               -- Website
-            , queryWebsites :: (DBMonad m)
+            , queryWebsites :: (MonadTholos m)
                             => UserId
                             -> m [Website]
-            , queryWebsite  :: (DBMonad m)
+            , queryWebsite  :: (MonadTholos m)
                             => WebsiteId
                             -> m Website
-            , insertWebsite :: (DBMonad m)
+            , insertWebsite :: (MonadTholos m)
                             => UserId
                             -> WebsiteURL
                             -> WebsiteName
                             -> m WebsiteId
-            , updateWebsite :: (DBMonad m)
+            , updateWebsite :: (MonadTholos m)
                             => WebsiteId
                             -> WebsiteURL
                             -> WebsiteName
                             -> m ()
-            , deleteWebsite :: (DBMonad m)
+            , deleteWebsite :: (MonadTholos m)
                             => WebsiteId
                             -> m ()
 
               -- Credentials
-            , queryAllUserCredentials  :: (DBMonad m)
+            , queryAllUserCredentials  :: (MonadTholos m)
                                        => UserId
                                        -> m [Credentials]
-            , queryCredentials  :: (DBMonad m)
+            , queryCredentials  :: (MonadTholos m)
                                 => CredentialsId
                                 -> m Credentials
-            , insertCredentials :: (DBMonad m)
+            , insertCredentials :: (MonadTholos m)
                                 => UserId
                                 -> WebsiteId
                                 -> EncryptedPassword
                                 -> WebUsername
                                 -> m CredentialsId
-            , updateCredentials :: (DBMonad m)
+            , updateCredentials :: (MonadTholos m)
                                 => CredentialsId
                                 -> EncryptedPassword
                                 -> WebUsername
                                 -> m ()
-            , deleteCredentials :: (DBMonad m)
+            , deleteCredentials :: (MonadTholos m)
                                 => CredentialsId
                                 -> m ()
               -- run function
-            , runDBI :: forall a . m a -> m' a
+            , runDBI :: (MonadTholos m, MonadTholos m')
+                     => forall a . m a -> m' a
             }
 
 

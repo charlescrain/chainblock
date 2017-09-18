@@ -12,8 +12,8 @@ import           Servant
 
 import           API.ContentTypes
 import           API.V0
-import           App.Transformer      (AppT)
-import           ChainBlock.API.Types
+import           App.Transformer  (AppT)
+import           Tholos.API.Types
 
 
 server :: ServerT API (AppT m m')

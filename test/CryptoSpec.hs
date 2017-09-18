@@ -2,13 +2,13 @@
 
 module CryptoSpec (main, spec) where
 
-import           Crypto.Error            (CryptoFailable (..))
-import           Data.ByteString.Base16  (decode, encode)
-import           Data.Text               (Text)
+import           Crypto.Error           (CryptoFailable (..))
+import           Data.ByteString.Base16 (decode, encode)
+import           Data.Text              (Text)
 import           Test.Hspec
 
-import           ChainBlock.Crypto
-import           ChainBlock.Crypto.Types
+import           Tholos.Crypto
+import           Tholos.Crypto.Types
 
 main :: IO ()
 main = hspec spec

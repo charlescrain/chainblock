@@ -1,7 +1,7 @@
 {-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module ChainBlock.DB.Postgres.Setup
+module Tholos.DB.Postgres.Setup
   ( createTables
   , createDBIfNeeded
   , dropDB
@@ -18,7 +18,7 @@ import           Database.PostgreSQL.Simple.SqlQQ
 import           Database.PostgreSQL.Simple.ToField
 import           Database.PostgreSQL.Simple.Types
 
-import           ChainBlock.DB.Postgres.Tables
+import           Tholos.DB.Postgres.Tables
 
 createTables :: Connection -> IO ()
 createTables conn = do

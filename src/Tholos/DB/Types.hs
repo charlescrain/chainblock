@@ -2,7 +2,7 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 
-module ChainBlock.DB.Types where
+module Tholos.DB.Types where
 
 import           Data.ByteString           (ByteString)
 import qualified Data.ByteString           as B
@@ -18,7 +18,7 @@ import           Test.QuickCheck.Gen
 import           Test.QuickCheck.Modifiers
 
 
-import           ChainBlock.Errors
+import           Tholos.Errors
 
 
 -----------------------------------------------------

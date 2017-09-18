@@ -4,24 +4,24 @@
 
 module DB.DBSpec (main, spec) where
 
-import           Control.Monad.Except         (ExceptT (..), runExceptT)
+import           Control.Monad.Except       (ExceptT (..), runExceptT)
 import           Data.Either
-import           Data.List                    (elem)
-import           Data.Monoid                  ((<>))
-import           Data.Text                    (Text)
-import           Database.PostgreSQL.Simple   (ConnectInfo (..), Connection,
-                                               close, connect)
-import           System.Environment           (getEnv)
+import           Data.List                  (elem)
+import           Data.Monoid                ((<>))
+import           Data.Text                  (Text)
+import           Database.PostgreSQL.Simple (ConnectInfo (..), Connection,
+                                             close, connect)
+import           System.Environment         (getEnv)
 import           Test.Hspec
-import           Test.QuickCheck.Arbitrary    (Arbitrary (..))
-import           Test.QuickCheck.Gen          (generate)
+import           Test.QuickCheck.Arbitrary  (Arbitrary (..))
+import           Test.QuickCheck.Gen        (generate)
 
-import           ChainBlock.DB.Interface
-import           ChainBlock.DB.Postgres
-import           ChainBlock.DB.Postgres.Setup
-import           ChainBlock.DB.Postgres.Types (PGDB (..))
-import           ChainBlock.DB.Types
-import           ChainBlock.Errors
+import           Tholos.DB.Interface
+import           Tholos.DB.Postgres
+import           Tholos.DB.Postgres.Setup
+import           Tholos.DB.Postgres.Types   (PGDB (..))
+import           Tholos.DB.Types
+import           Tholos.Errors
 
 main :: IO ()
 main = hspec spec

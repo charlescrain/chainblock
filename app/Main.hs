@@ -17,10 +17,10 @@ import           API
 import           App                                  (AppConfig (..), app,
                                                        getAppConfig)
 import           App.Transformer                      (AppT)
-import           ChainBlock.Business
-import           ChainBlock.DB.Postgres
-import           ChainBlock.DB.Postgres.Setup
 import           Server                               (server)
+import           Tholos.Business
+import           Tholos.DB.Postgres
+import           Tholos.DB.Postgres.Setup
 
 main :: IO ()
 main = do

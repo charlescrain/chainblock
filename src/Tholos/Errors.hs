@@ -1,4 +1,4 @@
-module ChainBlock.Errors where
+module Tholos.Errors where
 
 import           Control.Monad.Catch       (Exception (..), SomeException (..))
 import           Control.Monad.Error.Class (Error (..))

@@ -1,5 +1,5 @@
 {-# LANGUAGE QuasiQuotes #-}
-module ChainBlock.DB.Postgres.Tables where
+module Tholos.DB.Postgres.Tables where
 
 import           Data.Profunctor.Product          (p2, p3, p4, p5)
 import           Database.PostgreSQL.Simple

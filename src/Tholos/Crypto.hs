@@ -1,22 +1,22 @@
 {-# LANGUAGE LambdaCase        #-}
 {-# LANGUAGE OverloadedStrings #-}
-module ChainBlock.Crypto where
+module Tholos.Crypto where
 
 import           Crypto.Cipher.AES
 import           Crypto.Cipher.Types
-import           Crypto.Error            (CryptoFailable (..))
+import           Crypto.Error         (CryptoFailable (..))
 import           Crypto.Hash
-import           Data.Binary             (Binary, Word8)
-import qualified Data.Binary             as Binary
-import           Data.ByteArray          (convert)
-import           Data.ByteString         (ByteString)
-import qualified Data.ByteString         as B
-import qualified Data.ByteString.Lazy    as ByteString.Lazy
+import           Data.Binary          (Binary, Word8)
+import qualified Data.Binary          as Binary
+import           Data.ByteArray       (convert)
+import           Data.ByteString      (ByteString)
+import qualified Data.ByteString      as B
+import qualified Data.ByteString.Lazy as ByteString.Lazy
 import           Data.Either
-import           Data.Text               (Text)
-import           Data.Text.Encoding      (decodeUtf8, encodeUtf8)
+import           Data.Text            (Text)
+import           Data.Text.Encoding   (decodeUtf8, encodeUtf8)
 
-import           ChainBlock.Crypto.Types
+import           Tholos.Crypto.Types
 
 masterKey :: Text -> MasterKey
 masterKey = MasterKey . encodeUtf8

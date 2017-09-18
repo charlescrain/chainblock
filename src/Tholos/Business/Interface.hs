@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE TypeOperators         #-}
-module ChainBlock.Business.Interface where
+module Tholos.Business.Interface where
 
 
 import           Control.Monad.Catch       (MonadCatch, MonadThrow)
@@ -11,15 +11,10 @@ import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Logger      (MonadLogger)
 
-import           ChainBlock.Business.Types
-import           ChainBlock.Errors         (CBError (..))
+import           Tholos.Business.Types
+import           Tholos.Errors             (CBError (..))
+import           Tholos.Monad              (MonadTholos)
 
-class ( MonadError CBError m
-      , MonadThrow m
-      , MonadIO m
-      , MonadCatch m
-      , MonadLogger m
-      ) => MonadBusiness m
 
 data IBusinessFunctions m m' =
   IBusinessFunctions { -- Users
@@ -39,7 +34,8 @@ data IBusinessFunctions m m' =
                                        -> m ()
 
                        -- run function
-                     , runBusinessInterface :: ( forall a . m a -> m' a)
+                     , runBusinessInterface :: (MonadTholos m, MonadTholos m')
+                                            => forall a . m a -> m' a
                      }
 
 

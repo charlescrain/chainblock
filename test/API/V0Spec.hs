@@ -2,22 +2,22 @@
 
 module API.V0Spec (main, spec) where
 
-import           Control.Lens.Lens             ((&))
-import           Data.Aeson                    (toJSON)
-import           Data.ByteString.Base16        (decode, encode)
-import           Data.Monoid                   ((<>))
-import           Data.Text                     (Text)
-import           Network.Wai.Handler.Warp      (testWithApplication)
-import           Network.Wreq                  (Response, defaults, getWith,
-                                                postWith, responseBody)
-import           Network.Wreq.Types            (Options (..))
+import           Control.Lens.Lens         ((&))
+import           Data.Aeson                (toJSON)
+import           Data.ByteString.Base16    (decode, encode)
+import           Data.Monoid               ((<>))
+import           Data.Text                 (Text)
+import           Network.Wai.Handler.Warp  (testWithApplication)
+import           Network.Wreq              (Response, defaults, getWith,
+                                            postWith, responseBody)
+import           Network.Wreq.Types        (Options (..))
 import           Test.Hspec
 
 import           App
-import           ChainBlock.API.Types
-import           ChainBlock.Business.Interface
-import           ChainBlock.Crypto
 import           Config.Environment
+import           Tholos.API.Types
+import           Tholos.Business.Interface
+import           Tholos.Crypto
 
 main :: IO ()
 main = hspec spec

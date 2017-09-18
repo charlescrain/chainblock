@@ -1,17 +1,18 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module ChainBlock.DB.Postgres.Types where
+module Tholos.DB.Postgres.Types where
 
-import           Control.Monad.Catch     (MonadCatch, MonadThrow)
-import           Control.Monad.Except    (ExceptT, MonadError)
-import           Control.Monad.IO.Class  (MonadIO)
-import           Control.Monad.Logger    (LoggingT, MonadLogger)
-import           Data.Text               (Text)
+import           Control.Monad.Catch    (MonadCatch, MonadThrow)
+import           Control.Monad.Except   (ExceptT, MonadError)
+import           Control.Monad.IO.Class (MonadIO)
+import           Control.Monad.Logger   (LoggingT, MonadLogger)
+import           Data.Text              (Text)
 import           GHC.Generics
 
-import           ChainBlock.DB.Interface
-import           ChainBlock.Errors
+import           Tholos.DB.Interface
+import           Tholos.Errors
+import           Tholos.Monad
 
 
 -----------------------------------------------------
@@ -30,6 +31,6 @@ newtype PGDB a =
              , MonadThrow
              )
 
-instance DBMonad PGDB
+instance MonadTholos PGDB
 
 
