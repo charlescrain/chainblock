@@ -20,7 +20,7 @@ import           Tholos.Monad
 -----------------------------------------------------
 
 newtype PGDB a =
-  PGDB { runPGDB :: (ExceptT CBError (LoggingT IO)) a}
+  PGDB { runPGDB :: CommonT a}
     deriving ( Functor
              , Applicative
              , Monad
@@ -30,7 +30,6 @@ newtype PGDB a =
              , MonadError CBError
              , MonadThrow
              )
-
 instance MonadTholos PGDB
 
 

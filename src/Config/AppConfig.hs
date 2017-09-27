@@ -11,10 +11,10 @@ import           System.Environment        (getEnv)
 import           Config.Environment
 import           Tholos.Business.Interface
 
-data AppConfig m m' = AppConfig
+data AppConfig m = AppConfig
   { appEnv            :: Environment
   , appPort           :: Int
-  , appRouteInterface :: IBusinessFunctions m m'
+  , appRouteInterface :: IBusinessFunctions m
   } --deriving (Show)
 
 
@@ -23,8 +23,8 @@ data AppConfig m m' = AppConfig
 getAppConfig :: ( MonadIO m
                 --, MonadError e m
                 )
-             => IBusinessFunctions m m'
-             -> IO (AppConfig m m')
+             => IBusinessFunctions m
+             -> IO (AppConfig m)
 getAppConfig irf = do
   env <- read <$> getEnv "ENV"
   port <- read <$> getEnv "PORT"

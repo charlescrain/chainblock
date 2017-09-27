@@ -35,42 +35,44 @@ import           Tholos.DB.Interface
 import           Tholos.DB.Postgres.Setup   (createDBIfNeeded)
 import           Tholos.DB.Postgres.Tables
 import           Tholos.DB.Postgres.Types   (PGDB (..))
-import           Tholos.DB.Types
+import           Tholos.Types
 import           Tholos.Errors
 import           Tholos.Logging
+import           Tholos.Monad
 
 
-databaseInterface :: Connection
+createInterface :: Connection
                   -> (forall a . PGDB a -> m a )
-                  -> IO (IDataBase PGDB m)
-databaseInterface conn runDBInterface' =
-  return IDataBase { queryAllUsers     = queryAllUsers'           conn
-                   , queryUser         = queryUser'               conn
-                   , insertUser        = insertUser'              conn
-                   , updateUser        = updateUser'              conn
-                   , deleteUser        = deleteUser'              conn
+                  -> IO (IDataBase m)
+createInterface conn runInterface =
+  return IDataBase { queryAllUsers = runInterface $ queryAllUsers' conn
+                   , queryUser     = runInterface . queryUser' conn
+                   , insertUser    = runInterface . insertUser'   conn
+                   , updateUser    = \x y -> runInterface $ updateUser' conn  x y
+                   , deleteUser    = runInterface . deleteUser'   conn
 
-                   , queryWebsites     = queryWebsites'           conn
-                   , queryWebsite      = queryWebsite'            conn
-                   , insertWebsite     = insertWebsite'           conn
-                   , updateWebsite     = updateWebsite'           conn
-                   , deleteWebsite     = deleteWebsite'           conn
+                   , queryWebsites = runInterface . queryWebsites' conn
+                   , queryWebsite  = runInterface . queryWebsite'  conn
+                   , insertWebsite = \w x y -> runInterface $ insertWebsite' conn w x y
+                   , updateWebsite = \w x y -> runInterface $ updateWebsite' conn w x y
+                   , deleteWebsite = runInterface . deleteWebsite' conn
 
-                   , queryAllUserCredentials = queryAllUserCredentials' conn
-                   , queryCredentials        = queryCredentials'        conn
-                   , insertCredentials       = insertCredentials'       conn
-                   , updateCredentials       = updateCredentials'       conn
-                   , deleteCredentials       = deleteCredentials'       conn
-
-                   , runDBI           = runDBInterface'
+                   , queryAllUserCredentials = runInterface . queryAllUserCredentials' conn
+                   , queryCredentials        = runInterface . queryCredentials'        conn
+                   , insertCredentials       = \w x y z -> runInterface $ insertCredentials' conn w x y z
+                   , updateCredentials       = \w x y -> runInterface $ updateCredentials' conn w x y
+                   , deleteCredentials       = runInterface . deleteCredentials'       conn
                    }
 
 -----------------------------------------------------
 -- | runDBInterface Functions
 -----------------------------------------------------
 
-runDBInterfaceIO :: PGDB a -> (ExceptT CBError IO) a
-runDBInterfaceIO = ExceptT . flip runLoggingT logMsg  . runExceptT . runPGDB
+runInterfaceExceptT :: PGDB a -> (ExceptT CBError IO) a
+runInterfaceExceptT = ExceptT . runCommonT . runPGDB
+
+runInterfaceCommonT :: PGDB a -> CommonT a
+runInterfaceCommonT = runPGDB
 
 -----------------------------------------------------
 -- | Interface Implementation
@@ -185,18 +187,18 @@ deleteUser' conn (UserId uId') = do
 ---- | Website
 -----------------------------------------------------
 
-queryWebsites' :: Connection -> UserId -> PGDB [Website]
+queryWebsites' :: Connection -> UserId -> PGDB [WebsiteDetails]
 queryWebsites' conn (UserId uId') = do
   let src = "queryWebsites'"
   $logInfoS src $ pack ("querying websites for user with id: " <> show uId')
   rows <- catch (liftIO $ runQuery conn queryWeb)
     (\ (err :: SomeException) -> throwError . Ex $ err)
   return $ map (\(wId :: Int, wURL :: Text, wName :: Text, userId' :: Int) ->
-                    Website { websiteURL  = WebsiteURL wURL
-                            , websiteName = WebsiteName wName
-                            , websiteId   = WebsiteId . toInteger . fromIntegral $ wId
-                            , userId      = UserId . toInteger . fromIntegral $ userId'
-                            })
+                    WebsiteDetails { websiteURL  = WebsiteURL wURL
+                                   , websiteName = WebsiteName wName
+                                   , websiteId   = WebsiteId . toInteger . fromIntegral $ wId
+                                   , userId      = UserId . toInteger . fromIntegral $ userId'
+                                   })
                rows
   where
     queryWeb :: Query (Column P.PGInt4, Column P.PGText, Column P.PGText, Column P.PGInt4)
@@ -205,7 +207,7 @@ queryWebsites' conn (UserId uId') = do
       restrict -< (P.pgInt4 (fromIntegral uId') .== uId'')
       returnA -< row
 
-queryWebsite' :: Connection -> WebsiteId -> PGDB Website
+queryWebsite' :: Connection -> WebsiteId -> PGDB WebsiteDetails
 queryWebsite' conn (WebsiteId wId') = do
   let src = "queryWebsite'"
   $logInfoS src ("running on websiteId " <> pack (show wId'))
@@ -215,11 +217,11 @@ queryWebsite' conn (WebsiteId wId') = do
       [( wId' :: Int
        , wURL' :: Text
        , wName' :: Text
-       , uId' :: Int)]  -> return Website { websiteURL  = WebsiteURL wURL'
-                                          , websiteName = WebsiteName wName'
-                                          , websiteId   = WebsiteId . toInteger . fromIntegral $ wId'
-                                          , userId      = UserId . toInteger . fromIntegral $ uId'
-                                          }
+       , uId' :: Int)]  -> return WebsiteDetails { websiteURL  = WebsiteURL wURL'
+                                                 , websiteName = WebsiteName wName'
+                                                 , websiteId   = WebsiteId . toInteger . fromIntegral $ wId'
+                                                 , userId      = UserId . toInteger . fromIntegral $ uId'
+                                                 }
       [] -> do
         let errorMsg = "0 rows found for websiteId " <> pack (show wId')
         $logWarnS src errorMsg
@@ -327,8 +329,8 @@ queryAllUserCredentials' conn (UserId uId') = do
                   , wId' :: Int
                   , userId' :: Int) ->
                     Credentials { credId = CredentialsId . toInteger . fromIntegral $ cId
-                                , username = WebUsername wName
-                                , password = EncryptedPassword ep
+                                , webUsername = WebUsername wName
+                                , encPassword = EncryptedPassword ep
                                 , webId = WebsiteId . toInteger . fromIntegral $ wId'
                                 , credUserId = UserId . toInteger . fromIntegral $ userId'
                                 })
@@ -352,8 +354,8 @@ queryCredentials' conn (CredentialsId cId') = do
        , ePass' :: ByteString
        , wId' :: Int
        , uId' :: Int)]  -> return Credentials { credId = CredentialsId . toInteger . fromIntegral $ cId''
-                                              , username = WebUsername wUsername'
-                                              , password = EncryptedPassword ePass'
+                                              , webUsername = WebUsername wUsername'
+                                              , encPassword = EncryptedPassword ePass'
                                               , webId = WebsiteId . toInteger . fromIntegral $ wId'
                                               , credUserId = UserId . toInteger . fromIntegral $ uId'
                                               }

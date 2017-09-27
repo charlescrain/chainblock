@@ -9,6 +9,7 @@ import           Servant
 import           API.ContentTypes
 import           App.Transformer  (AppT)
 import           Tholos.API.Types
+import           Tholos.Types
 
 type API = "v0" :> UserSubRouteAPI
 

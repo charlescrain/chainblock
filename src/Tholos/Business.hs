@@ -13,45 +13,37 @@ import           Servant                   (Handler)
 
 import           Tholos.Business.Interface
 import           Tholos.Business.Types
+import           Tholos.Types
 import           Tholos.DB.Interface
+import           Tholos.DB.Postgres
 import           Tholos.Errors
 import           Tholos.Logging
+import           Tholos.Monad
 
 
-businessInterface :: (forall a . BZ a -> m a )
-                  -> IDataBase dbMonad BZ
-                  -> IO (IBusinessFunctions BZ m)
-businessInterface runBusinessInterface' _ =
+createInterface :: (forall a . BZ a -> m a )
+                  -> IO (IBusinessFunctions m)
+createInterface runInterface =
   return
-    IBusinessFunctions { getUsers = getUsers'
-                       , postUser = postUser'
+    IBusinessFunctions { getUsers = runInterface getUsers'
+                       , postUser = runInterface . postUser'
 
-                       , getWebsites     = getWebsites'
-                       , postWebsites    = postWebsites'
-                       , getCredentials  = getCredentials'
-                       , postCredentials = postCredentials'
-
-                       , runBusinessInterface = runBusinessInterface'
+                       , getWebsites     = runInterface . getWebsites'
+                       , postWebsites    = \x y -> runInterface $ postWebsites' x y
+                       , getCredentials  = \x y z -> runInterface $ getCredentials' x y z
+                       , postCredentials = \x y z -> runInterface $ postCredentials' x y z
                        }
 
 -----------------------------------------------------
 -- | runBusinessInterface Functions
 -----------------------------------------------------
 
-runBusinessInterfaceIO :: BZ a -> (ExceptT CBError IO) a
-runBusinessInterfaceIO = undefined
+runInterfaceExceptT :: IDataBase CommonT -> BZ a -> (ExceptT CBError IO) a
+runInterfaceExceptT = undefined
 
-runBusinessInterfaceHandler :: BZ a -> Handler a
-runBusinessInterfaceHandler = undefined
+runInterfaceCommonT :: IDataBase CommonT -> BZ a -> CommonT a
+runInterfaceCommonT dbi f = runReaderT (runBZ f) dbi
 
------------------------------------------------------
--- | runDBInterface Functions
------------------------------------------------------
-
-runPGDBInterfaceBZ :: PGDB a -> BZ a
-runPGDBInterfaceBZ = undefined
-
------------------------------------------------------
 -- | Interface Implementation
 -----------------------------------------------------
 

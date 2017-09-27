@@ -1,6 +1,6 @@
-.PHONY: start-chainblock test test-db
+.PHONY: start test test-db
 
-start-chainblock:
+start:
 	ENV=Development \
 		PORT=3000 \
 		PG_HOST=localhost \
@@ -18,7 +18,7 @@ test:
 		PG_DBNAME=chainblocktest \
 		PG_USER=postgres \
 		PG_PASSWORD=password \
-		stack test chainblock
+		stack test tholos
 
 test-db:
 	ENV=Test \
@@ -28,8 +28,8 @@ test-db:
 		PG_DBNAME=chainblocktest \
 		PG_USER=postgres \
 		PG_PASSWORD=password \
-		stack test chainblock --test-arguments="--match=DB"
+		stack test tholos --test-arguments="--match=Data"
 
 test-business:
 	ENV=Test \
-		stack test chainblock --test-arguments="--match=Business"
+		stack test tholos --test-arguments="--match=Business"

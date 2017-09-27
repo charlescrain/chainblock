@@ -11,65 +11,51 @@ import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Logger      (MonadLogger)
 
-import           Tholos.DB.Types
+import           Tholos.Types
 import           Tholos.Errors             (CBError (..))
-import           Tholos.Monad              (MonadTholos)
 
 
 
-data IDataBase m m'  =
+data IDataBase m  =
   IDataBase { -- Users
-              queryAllUsers :: (MonadTholos m) => m [User]
-            , queryUser     :: (MonadTholos m) => Username             -> m User
-            , insertUser    :: (MonadTholos m) => Username             -> m UserId
-            , updateUser    :: (MonadTholos m) => UserId   -> Username -> m ()
-            , deleteUser    :: (MonadTholos m) => UserId               -> m ()
+              queryAllUsers :: m [User]
+            , queryUser     :: Username             -> m User
+            , insertUser    :: Username             -> m UserId
+            , updateUser    :: UserId   -> Username -> m ()
+            , deleteUser    :: UserId               -> m ()
 
               -- Website
-            , queryWebsites :: (MonadTholos m)
-                            => UserId
-                            -> m [Website]
-            , queryWebsite  :: (MonadTholos m)
-                            => WebsiteId
-                            -> m Website
-            , insertWebsite :: (MonadTholos m)
-                            => UserId
+            , queryWebsites :: UserId
+                            -> m [WebsiteDetails]
+            , queryWebsite  :: WebsiteId
+                            -> m WebsiteDetails
+            , insertWebsite :: UserId
                             -> WebsiteURL
                             -> WebsiteName
                             -> m WebsiteId
-            , updateWebsite :: (MonadTholos m)
-                            => WebsiteId
+            , updateWebsite :: WebsiteId
                             -> WebsiteURL
                             -> WebsiteName
                             -> m ()
-            , deleteWebsite :: (MonadTholos m)
-                            => WebsiteId
+            , deleteWebsite :: WebsiteId
                             -> m ()
 
               -- Credentials
-            , queryAllUserCredentials  :: (MonadTholos m)
-                                       => UserId
+            , queryAllUserCredentials  :: UserId
                                        -> m [Credentials]
-            , queryCredentials  :: (MonadTholos m)
-                                => CredentialsId
+            , queryCredentials  :: CredentialsId
                                 -> m Credentials
-            , insertCredentials :: (MonadTholos m)
-                                => UserId
+            , insertCredentials :: UserId
                                 -> WebsiteId
                                 -> EncryptedPassword
                                 -> WebUsername
                                 -> m CredentialsId
-            , updateCredentials :: (MonadTholos m)
-                                => CredentialsId
+            , updateCredentials :: CredentialsId
                                 -> EncryptedPassword
                                 -> WebUsername
                                 -> m ()
-            , deleteCredentials :: (MonadTholos m)
-                                => CredentialsId
+            , deleteCredentials :: CredentialsId
                                 -> m ()
-              -- run function
-            , runDBI :: (MonadTholos m, MonadTholos m')
-                     => forall a . m a -> m' a
             }
 
 

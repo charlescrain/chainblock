@@ -4,14 +4,16 @@
 {-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE TypeOperators         #-}
 
-module Tholos.Monad (MonadTholos) where
+module Tholos.Monad where
 
 import           Control.Monad.Catch       (MonadCatch, MonadThrow)
 import           Control.Monad.Error.Class (MonadError)
+import           Control.Monad.Except      (ExceptT, MonadError, runExceptT)
 import           Control.Monad.IO.Class    (MonadIO)
-import           Control.Monad.Logger      (MonadLogger)
+import           Control.Monad.Logger
 
 import           Tholos.Errors             (CBError (..))
+import           Tholos.Logging
 
 
 class ( MonadError CBError m
@@ -20,3 +22,8 @@ class ( MonadError CBError m
       , MonadCatch m
       , MonadLogger m
       ) => MonadTholos m
+
+type CommonT = ExceptT CBError (LoggingT IO)
+
+runCommonT :: CommonT a -> IO (Either CBError a)
+runCommonT = flip runLoggingT logMsg . runExceptT 

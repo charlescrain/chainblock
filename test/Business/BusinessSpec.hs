@@ -4,27 +4,17 @@
 
 module Business.BusinessSpec (main, spec) where
 
-import           Control.Monad.Except       (ExceptT (..), runExceptT)
-import           Data.Either
-import           Data.List                  (elem)
-import           Data.Monoid                ((<>))
-import           Data.Text                  (Text)
-import           Database.PostgreSQL.Simple (ConnectInfo (..), Connection,
-                                             close, connect)
-import           System.Environment         (getEnv)
 import           Test.Hspec
 import           Test.QuickCheck.Arbitrary  (Arbitrary (..))
-import           Test.QuickCheck.Gen        (generate)
+import           Data.Either
+import           Test.QuickCheck.Gen        (generate, listOf)
 
 import           Tholos.Business
 import           Tholos.Business.Interface
 import           Tholos.Business.Types
 import           Tholos.DB.Interface
-import           Tholos.DB.Postgres
-import           Tholos.DB.Postgres.Setup
-import           Tholos.DB.Postgres.Types   (PGDB (..))
-import           Tholos.DB.Types
 import           Tholos.Errors
+import           Tholos.Monad
 
 main :: IO ()
 main = hspec spec
@@ -34,28 +24,40 @@ spec = bzSpec
 
 
 bzSpec :: Spec
-bzSpec = do
-    dbi <- runIO generateDBI
-    bzi <- runIO $ businessInterface runBusinessInterfaceIO dbi
-    runBusniessSpecs bzi
+bzSpec =
+  describe "Business layer Tests" $ do
+    dbI <- runIO generateDBI
+    runBusniessSpecs dbI
   where
-    runBusniessSpecs bzi = do
-      userSpec bzi
-      -- websiteSpec dbi
-      -- credntialsSpec dbi
+    runBusniessSpecs dbI = do
+      userSpec dbI
+      websiteSpec dbI
+   -- credntialsSpec dbi
 
-userSpec :: IBusinessFunctions BZ (ExceptT CBError IO)  -> Spec
-userSpec dbi =
+userSpec :: IDataBase CommonT -> Spec
+userSpec dbi  =
   describe "User Spec" $ do
-    it "should get a list of users" $
-      pendingWith "unimplemented"
-    it "should post a user and get an id" $
-      pendingWith "unimplemented"
+    it "should get a list of users" $ do
+      bzi <- createInterface (runInterfaceCommonT dbi)
+      Right testusers <- runCommonT $ queryAllUsers dbi
+      eResGet <- runCommonT . getUsers $ bzi
+      isRight eResGet `shouldBe` True
+      let Right users = eResGet
+      users `shouldBe` testusers
+    it "should post a user and get an id" $ do
+      bzi <- createInterface (runInterfaceCommonT dbi)
+      username <- generate arbitrary
+      postUserBody <- generate arbitrary
+      Right dbUserId <- runCommonT $ insertUser dbi username 
+      eResPost <- runCommonT $ postUser bzi postUserBody
+      isRight eResPost `shouldBe` True
+      let Right userId = eResPost
+      userId `shouldBe` dbUserId
     it "should post a user and handle duplciate key error" $
       pendingWith "unimplemented"
 
-websiteSpec :: IDataBase IO (ExceptT CBError IO)  -> Spec
-websiteSpec dbi = describe "Website Spec" $ do
+websiteSpec :: IDataBase CommonT -> Spec
+websiteSpec bzI = describe "Website Spec" $ do
     it "should get a list of websites" $
       pendingWith "unimplemented"
     it "should post a website and get an id" $
@@ -66,6 +68,38 @@ websiteSpec dbi = describe "Website Spec" $ do
 --Spec Utils
 ------------------------------------------------------------------------------
 
+generateDBI :: IO (IDataBase CommonT)
+generateDBI = do
+  queryAllUsers' <- generate (listOf arbitrary)
+  queryUser'     <- generate arbitrary
+  insertUser'    <- generate arbitrary
 
-generateDBI :: IO (IDataBase IO (ExceptT CBError IO))
-generateDBI = undefined
+  queryWebsites' <- generate (listOf arbitrary)
+  queryWebsite'  <- generate arbitrary
+  insertWebsite' <- generate arbitrary
+
+  queryAllUserCredentials' <- generate (listOf arbitrary)
+  queryCredentials'        <- generate arbitrary
+  insertCredentials'       <- generate arbitrary
+  return IDataBase { -- User
+                     queryAllUsers = return queryAllUsers'
+                   , queryUser     = (\_ -> return queryUser')
+                   , insertUser    = (\_ -> return insertUser')
+                   , updateUser    = (\_ _ -> return ())
+                   , deleteUser    = return . const ()
+
+                     -- Website
+                   , queryWebsites = (\_ -> return queryWebsites')
+                   , queryWebsite  = (\_ -> return queryWebsite')
+                   , insertWebsite = (\_ _ _ -> return insertWebsite')
+                   , updateWebsite = (\_ _ _ -> return ())
+                   , deleteWebsite = return . const ()
+
+                     -- Credentials
+                   , queryAllUserCredentials = (\_ -> return queryAllUserCredentials')
+                   , queryCredentials  = (\_ -> return queryCredentials')
+                   , insertCredentials = (\_ _ _ _ -> return insertCredentials')
+                   , updateCredentials = (\_ _ _ -> return ())
+                   , deleteCredentials = return . const ()
+                   }
+

@@ -1,4 +1,4 @@
-{-# LANGUAGE DeriveGeneric              #-}
+{-# LANGUAGE DeriveFunctor              #-}
 {-# LANGUAGE ExplicitForAll             #-}
 {-# LANGUAGE FlexibleContexts           #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -24,19 +24,7 @@ import           Tholos.Errors
 import           Tholos.Monad
 
 
-newtype BZ a = BZ { runBZ :: (ExceptT CBError (LoggingT IO)) a}
-    deriving ( Functor
-             , Applicative
-             , Monad
-             , MonadIO
-             , MonadCatch
-             , MonadLogger
-             , MonadError CBError
-             , MonadThrow
-             )
-instance MonadTholos BZ
--- newtype BZ m a =
---   BZ { runBZ :: MonadTholos m => (ReaderT (IDataBase m (BZ m)) (ExceptT CBError (LoggingT IO))) a}
+-- newtype BZ a = BZ { runBZ :: (ExceptT CBError (LoggingT IO)) a}
 --     deriving ( Functor
 --              , Applicative
 --              , Monad
@@ -45,5 +33,19 @@ instance MonadTholos BZ
 --              , MonadLogger
 --              , MonadError CBError
 --              , MonadThrow
---              , MonadReader (IDataBase m (BZ m))
 --              )
+-- instance MonadTholos BZ
+newtype BZ a =
+  BZ { runBZ :: (ReaderT (IDataBase CommonT) CommonT) a}
+    deriving ( Functor
+             , Applicative
+             , Monad
+             , MonadIO
+             , MonadCatch
+             , MonadLogger
+             , MonadError CBError
+             , MonadThrow
+             , MonadReader (IDataBase CommonT)
+             )
+-- instance Applicative (BZ m ) where
+--   pure = undefined

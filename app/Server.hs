@@ -15,10 +15,10 @@ import           API             (API, SubRoutesAPI)
 import           App.Transformer (AppT)
 import qualified Server.V0       as V0
 
-server :: ServerT API (AppT m m')
+server :: ServerT API (AppT m)
 server _ = subRoutesServer
 
-subRoutesServer :: ServerT SubRoutesAPI (AppT m m')
+subRoutesServer :: ServerT SubRoutesAPI (AppT m)
 subRoutesServer = V0.server
 
 

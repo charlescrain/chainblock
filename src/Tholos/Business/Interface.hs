@@ -11,12 +11,13 @@ import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Logger      (MonadLogger)
 
-import           Tholos.Business.Types
+import           Tholos.Types
+import           Tholos.API.Types
 import           Tholos.Errors             (CBError (..))
 import           Tholos.Monad              (MonadTholos)
 
 
-data IBusinessFunctions m m' =
+data IBusinessFunctions m =
   IBusinessFunctions { -- Users
                        getUsers :: m [User]
                      , postUser :: PostUserBody -> m UserId
@@ -32,10 +33,6 @@ data IBusinessFunctions m m' =
                                        -> WebsiteId
                                        -> PostCredentials
                                        -> m ()
-
-                       -- run function
-                     , runBusinessInterface :: (MonadTholos m, MonadTholos m')
-                                            => forall a . m a -> m' a
                      }
 
 

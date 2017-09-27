@@ -5,86 +5,11 @@ module Tholos.API.Types where
 import           Data.Aeson
 import           Data.Text       (Text)
 import           GHC.Generics
+import           Test.QuickCheck.Arbitrary
+import           Test.QuickCheck.Gen
 import           Web.HttpApiData
 
------------------------------------------------------
--- | User
------------------------------------------------------
-
-data User =
-  User  { name :: Username
-        , id   :: UserId
-        }
-  deriving (Show, Eq, Generic)
-instance ToJSON User
-instance FromJSON User
-
-
-newtype Username = Username Text
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON Username
-instance FromJSON Username
-
-newtype UserId = UserId Integer
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON UserId
-instance FromJSON UserId
-instance ToHttpApiData UserId
-instance FromHttpApiData UserId
-
-
------------------------------------------------------
--- | Website
------------------------------------------------------
-
-data Website =
-  Website { websiteDetails     :: WebsiteDetails
-          , websiteCredentials :: [WebsiteCredentials]
-          }
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON Website
-instance FromJSON Website
-
-data WebsiteDetails =
-  WebsiteDetails { webURL      :: WebsiteURL
-                 , websiteName :: Text
-                 , websiteId   :: WebsiteId
-                 , userId      :: UserId
-                 }
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON WebsiteDetails
-instance FromJSON WebsiteDetails
-
-data WebsiteCredentials =
-  WebsiteCredentials  { username :: WebUsername
-                      , password :: WebPassword
-                      }
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON WebsiteCredentials
-instance FromJSON WebsiteCredentials
-
-newtype WebPassword = WebPassword Text
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON WebPassword
-instance FromJSON WebPassword
-
-newtype WebUsername = WebUsername Text
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON WebUsername
-instance FromJSON WebUsername
-
-newtype WebsiteURL = WebsiteURL Text
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON WebsiteURL
-instance FromJSON WebsiteURL
-
-newtype WebsiteId = WebsiteId Integer
-  deriving (Show, Eq, Ord, Generic)
-instance ToJSON WebsiteId
-instance FromJSON WebsiteId
-instance ToHttpApiData WebsiteId
-instance FromHttpApiData WebsiteId
-
+import Tholos.Types
 
 -----------------------------------------------------
 -- |POST Types
@@ -94,6 +19,8 @@ newtype PostUserBody = PostUserBody Username
   deriving (Show, Eq, Generic)
 instance ToJSON PostUserBody
 instance FromJSON PostUserBody
+instance Arbitrary PostUserBody where
+  arbitrary = PostUserBody <$> arbitrary
 
 data PostWebsite = PostWebsite { postWebURL      :: WebsiteURL
                                , postWebsiteName :: Text
@@ -101,16 +28,25 @@ data PostWebsite = PostWebsite { postWebURL      :: WebsiteURL
   deriving (Show, Eq, Ord, Generic)
 instance ToJSON PostWebsite
 instance FromJSON PostWebsite
+instance Arbitrary PostWebsite where
+  arbitrary = PostWebsite <$> arbitrary
+                          <*> (genTextOfSize 12)
 
 newtype PostMasterKey = PostMasterKey Text
   deriving (Show, Eq, Generic)
 instance ToJSON PostMasterKey
 instance FromJSON PostMasterKey
+instance Arbitrary PostMasterKey where
+  arbitrary = PostMasterKey <$> (genTextOfSize 12)
 
 data PostCredentials = PostCredentials { postWebUsername :: WebUsername
-                                       , postWebPassword :: WebPassword
+                                       , postWebPassword :: PlainTextPassword
                                        , postMasterKey   :: PostMasterKey
                                        }
   deriving (Show, Eq, Generic)
 instance ToJSON PostCredentials
 instance FromJSON PostCredentials
+instance Arbitrary PostCredentials where
+  arbitrary = PostCredentials <$> arbitrary
+                              <*> arbitrary
+                              <*> arbitrary

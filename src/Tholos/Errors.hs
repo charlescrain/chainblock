@@ -1,3 +1,5 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Tholos.Errors where
 
 import           Control.Monad.Catch       (Exception (..), SomeException (..))

@@ -18,24 +18,23 @@ import           App                                  (AppConfig (..), app,
                                                        getAppConfig)
 import           App.Transformer                      (AppT)
 import           Server                               (server)
-import           Tholos.Business
-import           Tholos.DB.Postgres
+import qualified Tholos.Business                      as BZ
+import qualified Tholos.DB.Postgres                   as DB
 import           Tholos.DB.Postgres.Setup
 
 main :: IO ()
 main = do
   conn <- initDB
-  dbInterface <- databaseInterface conn runDBInterfaceBZ
+  dbI <- DB.createInterface conn DB.runInterfaceCommonT
 
-  bizInterface' <-
-    businessInterface runBusinessInterfaceHandler dbInterface
+  bzI <- BZ.createInterface (BZ.runInterfaceCommonT dbI)
 
-  cfg <- getAppConfig bizInterface'
+  cfg <- getAppConfig bzI
   run (appPort cfg) (app cfg)
 
 initDB :: IO Connection
 initDB = do
-  connInfo <- buildConnectInfo
+  connInfo <- DB.buildConnectInfo
   let dbName = connectDatabase connInfo
   _ <- createDBIfNeeded connInfo dbName
   connect connInfo

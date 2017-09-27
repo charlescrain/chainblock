@@ -2,22 +2,24 @@
 
 module API.V0Spec (main, spec) where
 
-import           Control.Lens.Lens         ((&))
+-- import           Control.Lens.Lens         ((&))
 import           Data.Aeson                (toJSON)
-import           Data.ByteString.Base16    (decode, encode)
+-- import           Data.ByteString.Base16    (decode, encode)
 import           Data.Monoid               ((<>))
-import           Data.Text                 (Text)
+-- import           Data.Text                 (Text)
 import           Network.Wai.Handler.Warp  (testWithApplication)
 import           Network.Wreq              (Response, defaults, getWith,
-                                            postWith, responseBody)
+                                             postWith, responseBody)
 import           Network.Wreq.Types        (Options (..))
 import           Test.Hspec
+import           Test.QuickCheck.Arbitrary  (Arbitrary (..))
+import           Test.QuickCheck.Gen        (generate)
 
 import           App
 import           Config.Environment
 import           Tholos.API.Types
 import           Tholos.Business.Interface
-import           Tholos.Crypto
+-- import           Tholos.Crypto
 
 main :: IO ()
 main = hspec spec
@@ -35,12 +37,12 @@ apiSpec =
         True `shouldBe` True
       it "should call POST /users and return a new userId" $ \port -> do
         pendingWith "Underconstruction"
-        let user = toJSON . PostUserBody $ (Username "Sabriel")
+        user <- toJSON <$> (generate arbitrary :: IO PostUserBody)
         resp <- post "/users" port user
         True `shouldBe` True
       it "should call GET /users/:userId/websites and return a list of website details" $ \port -> do
         pendingWith "Underconstruction"
-        let user = toJSON . PostUserBody $ (Username "Sabriel")
+        user <- toJSON <$> (generate arbitrary :: IO PostUserBody)
         resp <- get "/users" port
         True `shouldBe` True
       it "should call POST /users/:userId/websites and return a new websiteId" $ \port -> do
@@ -69,8 +71,8 @@ get r p = getWith options (buildUrl r p)
 
 post r p = postWith options (buildUrl r p)
 
-mkAppConfig :: IO (AppConfig IO IO)
+mkAppConfig :: IO (AppConfig IO)
 mkAppConfig = return $ AppConfig Test 8000 irf
 
-irf :: IBusinessFunctions IO IO
+irf :: IBusinessFunctions IO
 irf = undefined
