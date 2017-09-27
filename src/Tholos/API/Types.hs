@@ -23,14 +23,14 @@ instance Arbitrary PostUserBody where
   arbitrary = PostUserBody <$> arbitrary
 
 data PostWebsite = PostWebsite { postWebURL      :: WebsiteURL
-                               , postWebsiteName :: Text
+                               , postWebsiteName :: WebsiteName
                                }
   deriving (Show, Eq, Ord, Generic)
 instance ToJSON PostWebsite
 instance FromJSON PostWebsite
 instance Arbitrary PostWebsite where
   arbitrary = PostWebsite <$> arbitrary
-                          <*> (genTextOfSize 12)
+                          <*> arbitrary
 
 newtype PostMasterKey = PostMasterKey Text
   deriving (Show, Eq, Generic)

@@ -29,7 +29,7 @@ createInterface runInterface =
                        , postUser = runInterface . postUser'
 
                        , getWebsites     = runInterface . getWebsites'
-                       , postWebsites    = \x y -> runInterface $ postWebsites' x y
+                       , postWebsite    = \x y -> runInterface $ postWebsites' x y
                        , getCredentials  = \x y z -> runInterface $ getCredentials' x y z
                        , postCredentials = \x y z -> runInterface $ postCredentials' x y z
                        }

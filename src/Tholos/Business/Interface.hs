@@ -24,7 +24,7 @@ data IBusinessFunctions m =
 
                        -- Website
                      , getWebsites  :: UserId -> m [WebsiteDetails]
-                     , postWebsites :: UserId -> PostWebsite -> m WebsiteId
+                     , postWebsite :: UserId -> PostWebsite -> m WebsiteId
                      , getCredentials  :: UserId
                                        -> WebsiteId
                                        -> PostMasterKey

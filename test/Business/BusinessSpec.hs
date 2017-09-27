@@ -12,6 +12,7 @@ import           Test.QuickCheck.Gen        (generate, listOf)
 import           Tholos.Business
 import           Tholos.Business.Interface
 import           Tholos.Business.Types
+import           Tholos.Types
 import           Tholos.DB.Interface
 import           Tholos.Errors
 import           Tholos.Monad
@@ -35,37 +36,54 @@ bzSpec =
    -- credntialsSpec dbi
 
 userSpec :: IDataBase CommonT -> Spec
-userSpec dbi  =
+userSpec dbI  =
   describe "User Spec" $ do
     it "should get a list of users" $ do
-      bzi <- createInterface (runInterfaceCommonT dbi)
-      Right testusers <- runCommonT $ queryAllUsers dbi
-      eResGet <- runCommonT . getUsers $ bzi
+      bzI <- createInterface (runInterfaceCommonT dbI)
+      Right usersFromDB <- runCommonT $ queryAllUsers dbI
+
+      eResGet <- runCommonT . getUsers $ bzI
       isRight eResGet `shouldBe` True
       let Right users = eResGet
-      users `shouldBe` testusers
+      users `shouldBe` usersFromDB
     it "should post a user and get an id" $ do
-      bzi <- createInterface (runInterfaceCommonT dbi)
+      bzI <- createInterface (runInterfaceCommonT dbI)
       username <- generate arbitrary
       postUserBody <- generate arbitrary
-      Right dbUserId <- runCommonT $ insertUser dbi username 
-      eResPost <- runCommonT $ postUser bzi postUserBody
+      Right userIdFromDB <- runCommonT $ insertUser dbI username
+
+      eResPost <- runCommonT $ postUser bzI postUserBody
       isRight eResPost `shouldBe` True
       let Right userId = eResPost
-      userId `shouldBe` dbUserId
-    it "should post a user and handle duplciate key error" $
-      pendingWith "unimplemented"
+      userId `shouldBe` userIdFromDB
 
 websiteSpec :: IDataBase CommonT -> Spec
-websiteSpec bzI = describe "Website Spec" $ do
-    it "should get a list of websites" $
-      pendingWith "unimplemented"
-    it "should post a website and get an id" $
-      pendingWith "unimplemented"
+websiteSpec dbI = describe "Website Spec" $ do
+    it "should get a list of websites" $ do
+      bzI <- createInterface (runInterfaceCommonT dbI)
+      userid <- generate arbitrary
+      Right websitesFromDB <- runCommonT $ queryWebsites dbI userid
+
+      eResGet <- runCommonT $ getWebsites bzI  userid
+      isRight eResGet `shouldBe` True
+      let Right websites  = eResGet
+      websites `shouldBe` websitesFromDB
+    it "should post a website and get an id" $ do
+      bzI <- createInterface (runInterfaceCommonT dbI)
+      userid <- generate arbitrary
+      wurl <- generate arbitrary
+      wname <- generate arbitrary
+      let postWeb = PostWebsite wurl wname
+      Right webIdInDB <- runCommonT $ insertWebsite dbI userid wurl wname
+
+      eResPost <- runCommonT $ postWebsite bzI userid postWeb
+      isRight eResPost `shouldBe` True
+      let Right wid  = eResPost
+      wid `shouldBe` webIdInDB
 
 
 ------------------------------------------------------------------------------
---Spec Utils
+-- | Spec Utils
 ------------------------------------------------------------------------------
 
 generateDBI :: IO (IDataBase CommonT)
