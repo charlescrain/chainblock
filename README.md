@@ -19,4 +19,4 @@ It is encouraged to set the environment variables as needed in the Makefile. You
 
 ## Testing
 
-```make test-db```
+```make test```
