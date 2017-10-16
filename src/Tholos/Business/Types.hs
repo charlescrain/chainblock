@@ -9,6 +9,7 @@
 module Tholos.Business.Types
        ( module Tholos.API.Types
        , BZ (..)
+       , liftCommonT
        )
        where
 
@@ -17,6 +18,7 @@ import           Control.Monad.Except   (ExceptT, MonadError)
 import           Control.Monad.IO.Class (MonadIO)
 import           Control.Monad.Logger   (LoggingT, MonadLogger)
 import           Control.Monad.Reader   (MonadReader, ReaderT, runReaderT)
+import Control.Monad.Trans.Class
 
 import           Tholos.API.Types
 import           Tholos.DB.Interface
@@ -47,5 +49,8 @@ newtype BZ a =
              , MonadThrow
              , MonadReader (IDataBase CommonT)
              )
+
+liftCommonT :: CommonT a -> BZ a
+liftCommonT = BZ . lift
 -- instance Applicative (BZ m ) where
 --   pure = undefined

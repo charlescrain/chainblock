@@ -8,11 +8,14 @@ import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.Except      (ExceptT (..), runExceptT,
                                             throwError)
 import           Control.Monad.IO.Class    (MonadIO)
-import           Control.Monad.Reader      (MonadReader, ReaderT, runReaderT)
+import           Control.Monad.Reader
 import           Servant                   (Handler)
+import Data.Text.Encoding (encodeUtf8)
 
 import           Tholos.Business.Interface
 import           Tholos.Business.Types
+import           Tholos.Crypto
+import           Tholos.Crypto.Types
 import           Tholos.Types
 import           Tholos.DB.Interface
 import           Tholos.DB.Postgres
@@ -44,30 +47,44 @@ runInterfaceExceptT = undefined
 runInterfaceCommonT :: IDataBase CommonT -> BZ a -> CommonT a
 runInterfaceCommonT dbi f = runReaderT (runBZ f) dbi
 
+-----------------------------------------------------
 -- | Interface Implementation
 -----------------------------------------------------
 
 getUsers' :: BZ [User]
-getUsers' = undefined
+getUsers' = do
+  dbi <- ask
+  liftCommonT $ queryAllUsers dbi
 
 postUser' :: PostUserBody -> BZ UserId
-postUser' = undefined
+postUser' (PostUserBody un) = do
+  dbi <- ask
+  liftCommonT $ insertUser dbi un
 
 getWebsites' :: UserId -> BZ [WebsiteDetails]
-getWebsites' = undefined
+getWebsites' uid = do 
+  dbi <- ask
+  liftCommonT $ queryWebsites dbi uid
 
 postWebsites' :: UserId -> PostWebsite -> BZ WebsiteId
-postWebsites' = undefined
+postWebsites' uid PostWebsite{postWebURL=url, postWebsiteName=name} = do 
+  dbi <- ask
+  liftCommonT $ insertWebsite dbi uid url name
 
 getCredentials' :: UserId
                 -> WebsiteId
                 -> PostMasterKey
                 -> BZ Website
-getCredentials' = undefined
+getCredentials' uid wid (PostMasterKey tKey) = do
+  dbi <- ask
+  let mKey = MasterKey $ encodeUtf8 tKey
+  userCreds <- liftCommonT $ queryAllUserCredentials dbi uid
+  let credsForSite = filter ((==) wid . webId) userCreds
+  undefined
 
 
 postCredentials' :: UserId
-                -> WebsiteId
-                -> PostCredentials
-                -> m ()
+                 -> WebsiteId
+                 -> PostCredentials
+                 -> m ()
 postCredentials' = undefined

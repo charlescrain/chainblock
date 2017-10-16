@@ -55,24 +55,25 @@ library
 
   default-language:     Haskell2010
   build-depends:        base >= 4.7 
+                      , QuickCheck 
                       , aeson
                       , base16-bytestring
                       , binary
                       , bytestring
                       , cryptonite
                       , exceptions
-                      , QuickCheck 
+                      , fast-logger
                       , http-api-data
-                      , pretty
                       , memory
                       , monad-logger
-                      , fast-logger
                       , mtl
                       , opaleye
                       , postgresql-simple
+                      , pretty
                       , product-profunctors
                       , servant-server
                       , text
+                      , transformers
                       , utf8-string
 
 test-suite              webapp-test

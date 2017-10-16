@@ -33,7 +33,7 @@ bzSpec =
     runBusniessSpecs dbI = do
       userSpec dbI
       websiteSpec dbI
-   -- credntialsSpec dbi
+      credentialsSpec dbI
 
 userSpec :: IDataBase CommonT -> Spec
 userSpec dbI  =
@@ -81,13 +81,44 @@ websiteSpec dbI = describe "Website Spec" $ do
       let Right wid  = eResPost
       wid `shouldBe` webIdInDB
 
+credentialsSpec :: IDataBase CommonT -> Spec
+credentialsSpec dbI = describe "Credentials Spec" $ do
+  it "should get all user plaintext credentials for a website and website details" $ do
+      bzI <- createInterface (runInterfaceCommonT dbI)
+      userid <- generate arbitrary
+      Right websitesFromDB <- runCommonT $ queryWebsites dbI userid
+
+      eResGet <- runCommonT $ getWebsites bzI  userid
+      isRight eResGet `shouldBe` True
+      let Right websites  = eResGet
+      websites `shouldBe` websitesFromDB
+
+      pmk <- generate arbitrary
+      let wid = websiteId $ websites !! 0
+      eResGetCreds <- runCommonT $ getCredentials bzI userid wid pmk
+      isRight eResGetCreds `shouldBe` True
+      -- let Right creds  = eResGetCreds
+      -- websites `shouldBe` websitesFromDB
+  it "should post a credentials for a website" $ do
+      bzI <- createInterface (runInterfaceCommonT dbI)
+      userid <- generate arbitrary
+      wurl <- generate arbitrary
+      wname <- generate arbitrary
+      let postWeb = PostWebsite wurl wname
+      Right webIdInDB <- runCommonT $ insertWebsite dbI userid wurl wname
+
+      eResPost <- runCommonT $ postWebsite bzI userid postWeb
+      isRight eResPost `shouldBe` True
+      let Right wid  = eResPost
+      wid `shouldBe` webIdInDB
+
 
 ------------------------------------------------------------------------------
 -- | Spec Utils
 ------------------------------------------------------------------------------
 
 generateDBI :: IO (IDataBase CommonT)
-generateDBI = do
+generateDBI  = do
   queryAllUsers' <- generate (listOf arbitrary)
   queryUser'     <- generate arbitrary
   insertUser'    <- generate arbitrary
