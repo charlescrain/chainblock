@@ -8,7 +8,7 @@ start:
 		PG_DBNAME=chainblock \
 		PG_USER=postgres \
 		PG_PASSWORD=password \
-		stack exec chainblock
+		stack exec tholos
 
 test:
 	ENV=Test \
