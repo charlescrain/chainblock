@@ -31,6 +31,7 @@ data IBusinessFunctions m =
                                        -> m Website
                      , postCredentials :: UserId
                                        -> WebsiteId
+                                       -> PostMasterKey
                                        -> PostCredentials
                                        -> m ()
                      }

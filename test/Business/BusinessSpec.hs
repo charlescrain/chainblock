@@ -23,7 +23,6 @@ main = hspec spec
 spec :: Spec
 spec = bzSpec
 
-
 bzSpec :: Spec
 bzSpec =
   describe "Business layer Tests" $ do
@@ -86,37 +85,24 @@ credentialsSpec dbI = describe "Credentials Spec" $ do
   it "should get all user plaintext credentials for a website and website details" $ do
       bzI <- createInterface (runInterfaceCommonT dbI)
       userid <- generate arbitrary
-      Right websitesFromDB <- runCommonT $ queryWebsites dbI userid
-
-      eResGet <- runCommonT $ getWebsites bzI  userid
-      isRight eResGet `shouldBe` True
-      let Right websites  = eResGet
-      websites `shouldBe` websitesFromDB
-
+      wid <- generate arbitrary
       pmk <- generate arbitrary
-      let wid = websiteId $ websites !! 0
       eResGetCreds <- runCommonT $ getCredentials bzI userid wid pmk
       isRight eResGetCreds `shouldBe` True
-      -- let Right creds  = eResGetCreds
-      -- websites `shouldBe` websitesFromDB
   it "should post a credentials for a website" $ do
       bzI <- createInterface (runInterfaceCommonT dbI)
       userid <- generate arbitrary
-      wurl <- generate arbitrary
-      wname <- generate arbitrary
-      let postWeb = PostWebsite wurl wname
-      Right webIdInDB <- runCommonT $ insertWebsite dbI userid wurl wname
-
-      eResPost <- runCommonT $ postWebsite bzI userid postWeb
-      isRight eResPost `shouldBe` True
-      let Right wid  = eResPost
-      wid `shouldBe` webIdInDB
+      wid <- generate arbitrary
+      pmk <- generate arbitrary
+      pc <- generate arbitrary
+      eResPostCreds <- runCommonT $ postCredentials bzI userid wid pmk pc
+      isRight eResPostCreds `shouldBe` True
 
 
 ------------------------------------------------------------------------------
 -- | Spec Utils
 ------------------------------------------------------------------------------
-
+--TODO::Improve the DB Interface so that tests become useful 
 generateDBI :: IO (IDataBase CommonT)
 generateDBI  = do
   queryAllUsers' <- generate (listOf arbitrary)

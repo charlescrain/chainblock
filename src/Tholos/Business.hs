@@ -41,7 +41,7 @@ createInterface runInterface =
                        , getWebsites     = runInterface . getWebsites'
                        , postWebsite    = \x y -> runInterface $ postWebsites' x y
                        , getCredentials  = \x y z -> runInterface $ getCredentials' x y z
-                       , postCredentials = \x y z -> runInterface $ postCredentials' x y z
+                       , postCredentials = \w x y z -> runInterface $ postCredentials' w x y z
                        }
 
 -----------------------------------------------------
@@ -117,6 +117,7 @@ getCredentials' uid wid (PostMasterKey tKey) = do
 
 postCredentials' :: UserId
                  -> WebsiteId
+                 -> PostMasterKey
                  -> PostCredentials
                  -> m ()
 postCredentials' = undefined
