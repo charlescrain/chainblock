@@ -5,6 +5,7 @@ module Tholos.Errors where
 import           Control.Monad.Catch       (Exception (..), SomeException (..))
 import           Control.Monad.Error.Class (Error (..))
 import           Data.Text                 (Text)
+import Crypto.Error (CryptoError)
 
 data CBError = DatabaseError Text Text DB_Errors
              | BusinessError Text Text BZ_Errors
@@ -15,7 +16,7 @@ data DB_Errors  = NoResults
                 | DuplicateKeyViolation
                 | NoRowsAltered
   deriving (Show)
-data BZ_Errors  = BZERROR
+data BZ_Errors  = Crypto CryptoError
   deriving (Show)
 data API_Errors = APIERROR
   deriving (Show)

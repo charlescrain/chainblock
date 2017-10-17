@@ -1,6 +1,9 @@
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE TypeOperators       #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE TemplateHaskell     #-}
 
 module Tholos.Business where
 
@@ -9,7 +12,11 @@ import           Control.Monad.Except      (ExceptT (..), runExceptT,
                                             throwError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Reader
+import           Control.Monad.Logger
+import           Data.Monoid                ((<>))
+import           Data.Text                  hiding (length, map, filter)
 import           Servant                   (Handler)
+import Crypto.Error (CryptoFailable(..), CryptoError(..))
 import Data.Text.Encoding (encodeUtf8)
 
 import           Tholos.Business.Interface
@@ -77,10 +84,35 @@ getCredentials' :: UserId
                 -> BZ Website
 getCredentials' uid wid (PostMasterKey tKey) = do
   dbi <- ask
-  let mKey = MasterKey $ encodeUtf8 tKey
+  let mkey = masterKey tKey
   userCreds <- liftCommonT $ queryAllUserCredentials dbi uid
   let credsForSite = filter ((==) wid . webId) userCreds
-  undefined
+  webCreds <- sequence $ map (credentialsToWebCredentials mkey) credsForSite
+  wDetails <- liftCommonT $ queryWebsite dbi wid
+  return Website { websiteDetails = wDetails
+                 , websiteCredentials = webCreds
+                 }
+    where
+      credentialsToWebCredentials mkey Credentials { webUsername = wun@(WebUsername twun)
+                                                   , encPassword = EncryptedPassword ep
+                                                   } = do
+        let src = "getCredentials'"
+            cfpass =  decryptWithMasterKey mkey (CipherText ep)
+        case cfpass of
+          CryptoFailed err -> do
+            let errorMsg = "CryptoError with userId,webId,username"
+                        <> pack (show uid)
+                        <> ","
+                        <> pack (show wid)
+                        <> ","
+                        <> twun
+                        <> " error is: "
+                        <> pack (show err)
+            $logWarnS src errorMsg
+            throwError $ BusinessError src errorMsg (Crypto err)
+          CryptoPassed pass -> return WebsiteCredentials { username = wun
+                                                         , password = PlainTextPassword pass
+                                                         }
 
 
 postCredentials' :: UserId
