@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module App
+module Tholos.App
   ( app
   , AppConfig(..)
   , getAppConfig
@@ -15,11 +15,11 @@ import           Network.Wai.Middleware.Cors
 import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import           Servant
 
-import           API
-import           App.Transformer
-import           Config.AppConfig                     (AppConfig (..),
+import           Tholos.API
+import           Tholos.App.Transformer
+import           Tholos.AppConfig                     (AppConfig (..),
                                                        getAppConfig)
-import           Server                               (server)
+import           Tholos.Server                        (server)
 
 app :: MonadIO m => AppConfig m -> Wai.Application
 app cfg = logStdoutDev . cors (const $ Just corsPolicy) $

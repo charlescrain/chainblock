@@ -35,9 +35,15 @@ executable tholos
 
 library
   hs-source-dirs:       src
-  exposed-modules:      Tholos.API.Types
-                      , Config.AppConfig
-                      , Config.Environment
+  exposed-modules:
+                        Tholos.API
+                      , Tholos.API.ContentTypes
+                      , Tholos.API.V0
+                      , Tholos.API.Types
+                      , Tholos.App
+                      , Tholos.App.Transformer
+                      , Tholos.AppConfig
+                      , Tholos.AppConfig.Environment
                       , Tholos.Business
                       , Tholos.Business.Interface
                       , Tholos.Business.Types
@@ -52,15 +58,19 @@ library
                       , Tholos.Logging
                       , Tholos.Monad
                       , Tholos.Types
+                      , Tholos.Server
+                      , Tholos.Server.V0
 
   default-language:     Haskell2010
   build-depends:        base >= 4.7 
                       , QuickCheck 
                       , aeson
+                      , attoparsec
                       , base16-bytestring
                       , binary
                       , bytestring
                       , cryptonite
+                      , http-media
                       , exceptions
                       , fast-logger
                       , http-api-data
@@ -75,6 +85,10 @@ library
                       , text
                       , transformers
                       , utf8-string
+                      , wai
+                      , wai-cors
+                      , wai-extra
+                      , warp
 
 test-suite              webapp-test
  type:                  exitcode-stdio-1.0

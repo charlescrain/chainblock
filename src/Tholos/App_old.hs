@@ -1,13 +1,17 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
-module App.Transformer where
+module Tholos.App
+  ( AppT
+  , AppConfig (..)
+  , getAppConfig
+  , runAppT
+  ) where
 
+import           Config.AppConfig          (AppConfig (..), getAppConfig)
 import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Reader      (MonadReader, ReaderT, runReaderT)
 import           Servant                   (Handler, ServantErr)
-
-import           Config.AppConfig          (AppConfig)
 
 -- NOTE: `Handler` is equivalent to `type Handler = ExceptT ServantErr IO
 newtype AppT m a = AppT { unApp :: ReaderT (AppConfig m) Handler a }

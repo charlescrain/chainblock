@@ -4,13 +4,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
-module API where
+module Tholos.API where
 
 import           Data.Text       (Text)
 import           Servant
 
-import qualified API.V0          as V0
-import           App.Transformer (AppT)
+import qualified Tholos.API.V0          as V0
+import           Tholos.App.Transformer (AppT)
 
 type API = "api" :> Header "Accept" Text :> SubRoutesAPI
 

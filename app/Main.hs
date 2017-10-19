@@ -13,11 +13,11 @@ import           Network.Wai.Middleware.Cors
 import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import           Servant
 
-import           API
-import           App                                  (AppConfig (..), app,
+import           Tholos.API
+import           Tholos.App                                  (AppConfig (..), app,
                                                        getAppConfig)
-import           App.Transformer                      (AppT)
-import           Server                               (server)
+import           Tholos.App.Transformer                      (AppT)
+import           Tholos.Server                               (server)
 import qualified Tholos.Business                      as BZ
 import qualified Tholos.DB.Postgres                   as DB
 import           Tholos.DB.Postgres.Setup

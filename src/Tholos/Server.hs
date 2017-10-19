@@ -4,16 +4,16 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
-module Server
+module Tholos.Server
   ( server
   ) where
 
 import           Data.Text       (Text)
 import           Servant
 
-import           API             (API, SubRoutesAPI)
-import           App.Transformer (AppT)
-import qualified Server.V0       as V0
+import           Tholos.API             (API, SubRoutesAPI)
+import           Tholos.App.Transformer (AppT)
+import qualified Tholos.Server.V0       as V0
 
 server :: ServerT API (AppT m)
 server _ = subRoutesServer

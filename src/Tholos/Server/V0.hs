@@ -2,7 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module Server.V0
+module Tholos.Server.V0
   ( API
   , api
   , server
@@ -10,9 +10,9 @@ module Server.V0
 
 import           Servant
 
-import           API.ContentTypes
-import           API.V0
-import           App.Transformer  (AppT)
+import           Tholos.API.ContentTypes
+import           Tholos.API.V0
+import           Tholos.App.Transformer  (AppT)
 import           Tholos.API.Types
 import           Tholos.Types
 

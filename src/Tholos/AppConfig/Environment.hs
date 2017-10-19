@@ -1,4 +1,4 @@
-module Config.Environment
+module Tholos.AppConfig.Environment
   ( Environment(..)
   ) where
 

@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 
-module API.ContentTypes where
+module Tholos.API.ContentTypes where
 
 import           Data.Aeson
 import           Data.Aeson.Parser

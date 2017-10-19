@@ -2,12 +2,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module API.V0 where
+module Tholos.API.V0 where
 
 import           Servant
 
-import           API.ContentTypes
-import           App.Transformer  (AppT)
+import           Tholos.API.ContentTypes
+import           Tholos.App.Transformer  (AppT)
 import           Tholos.API.Types
 import           Tholos.Types
 
