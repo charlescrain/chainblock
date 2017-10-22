@@ -16,7 +16,7 @@ import           Servant
 import           Tholos.API
 import           Tholos.App                                  (AppConfig (..), app,
                                                        getAppConfig)
-import           Tholos.App.Transformer                      (AppT)
+import           Tholos.App.Transformer                      (TholosT)
 import           Tholos.Server                               (server)
 import qualified Tholos.Business                      as BZ
 import qualified Tholos.DB.Postgres                   as DB
@@ -29,7 +29,7 @@ main = do
 
   bzI <- BZ.createInterface (BZ.runInterfaceCommonT dbI)
 
-  cfg <- getAppConfig bzI
+  cfg <- getAppConfig
   run (appPort cfg) (app cfg)
 
 initDB :: IO Connection

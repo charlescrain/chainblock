@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module CryptoSpec (main, spec) where
+module Crypto.Spec (main, spec) where
 
 import           Crypto.Error           (CryptoFailable (..))
 import           Data.ByteString.Base16 (decode, encode)

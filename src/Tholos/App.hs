@@ -10,7 +10,6 @@ module Tholos.App
 import           Control.Monad.IO.Class               (MonadIO)
 import           Data.Monoid                          ((<>))
 import           Network.Wai                          as Wai
--- import           Network.Wai.Handler.Warp
 import           Network.Wai.Middleware.Cors
 import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import           Servant
@@ -21,15 +20,15 @@ import           Tholos.AppConfig                     (AppConfig (..),
                                                        getAppConfig)
 import           Tholos.Server                        (server)
 
-app :: MonadIO m => AppConfig m -> Wai.Application
+app :: AppConfig -> Wai.Application
 app cfg = logStdoutDev . cors (const $ Just corsPolicy) $
             serve api (readerServer cfg)
 
-readerServer ::  MonadIO m => AppConfig m -> Server API
+readerServer :: AppConfig -> Server API
 readerServer cfg = enter (readerToEither cfg) server
 
-readerToEither :: MonadIO m => AppConfig m -> (AppT m) :~> Handler
-readerToEither cfg = Nat $ \appT -> runAppT cfg appT
+readerToEither :: AppConfig -> TholosT :~> Handler
+readerToEither cfg = Nat $ \tholosT -> runTholosT cfg tholosT
 
 corsPolicy :: CorsResourcePolicy
 corsPolicy =

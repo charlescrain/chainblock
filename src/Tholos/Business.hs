@@ -48,7 +48,7 @@ createInterface runInterface =
 -- | runBusinessInterface Functions
 -----------------------------------------------------
 
-runInterfaceExceptT :: IDataBase CommonT -> BZ a -> (ExceptT CBError IO) a
+runInterfaceExceptT :: IDataBase CommonT -> BZ a -> (ExceptT TholosError IO) a
 runInterfaceExceptT = undefined
 
 runInterfaceCommonT :: IDataBase CommonT -> BZ a -> CommonT a
@@ -109,7 +109,7 @@ getCredentials' uid wid (PostMasterKey tKey) = do
                         <> " error is: "
                         <> pack (show err)
             $logWarnS src errorMsg
-            throwError $ BusinessError src errorMsg (Crypto err)
+            throwError $ Crypto src errorMsg err
           CryptoPassed pass -> return WebsiteCredentials { username = wun
                                                          , password = PlainTextPassword pass
                                                          }

@@ -12,7 +12,7 @@ import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Logger      (MonadLogger)
 
 import           Tholos.Types
-import           Tholos.Errors             (CBError (..))
+import           Tholos.Errors             (TholosError (..))
 
 
 

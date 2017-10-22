@@ -26,14 +26,14 @@ import           Tholos.Errors
 import           Tholos.Monad
 
 
--- newtype BZ a = BZ { runBZ :: (ExceptT CBError (LoggingT IO)) a}
+-- newtype BZ a = BZ { runBZ :: (ExceptT TholosError (LoggingT IO)) a}
 --     deriving ( Functor
 --              , Applicative
 --              , Monad
 --              , MonadIO
 --              , MonadCatch
 --              , MonadLogger
---              , MonadError CBError
+--              , MonadError TholosError
 --              , MonadThrow
 --              )
 -- instance MonadTholos BZ
@@ -45,7 +45,7 @@ newtype BZ a =
              , MonadIO
              , MonadCatch
              , MonadLogger
-             , MonadError CBError
+             , MonadError TholosError
              , MonadThrow
              , MonadReader (IDataBase CommonT)
              )

@@ -7,26 +7,20 @@ import           Control.Monad.Error.Class (Error (..))
 import           Data.Text                 (Text)
 import Crypto.Error (CryptoError)
 
-data CBError = DatabaseError Text Text DB_Errors
-             | BusinessError Text Text BZ_Errors
-             | APIError      Text Text API_Errors
-             | Ex            SomeException
+data TholosError = DatabaseError Text Text DB_Errors
+                 | Crypto Text Text CryptoError
+                 | Ex            SomeException
   deriving (Show)
+
 data DB_Errors  = NoResults
                 | DuplicateKeyViolation
                 | NoRowsAltered
-  deriving (Show)
-data BZ_Errors  = Crypto CryptoError
-  deriving (Show)
-data API_Errors = APIERROR
+                | NotUnique'
   deriving (Show)
 
 -- instance Error CBErrors
 
-
-data CBException = DatabaseEx Text Text DBException
-                 | BusinessEx Text Text BZException
-                 | APIEx      Text Text APIException
+data TholosException = DatabaseEx Text Text DBException
   deriving (Show)
 data DBException = NotUnique
   deriving (Show)
@@ -35,4 +29,4 @@ data BZException = BZException
 data APIException = APIException
   deriving (Show)
 
-instance Exception CBException
+instance Exception TholosException

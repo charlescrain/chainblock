@@ -12,18 +12,18 @@ import           Control.Monad.Except      (ExceptT, MonadError, runExceptT)
 import           Control.Monad.IO.Class    (MonadIO)
 import           Control.Monad.Logger
 
-import           Tholos.Errors             (CBError (..))
+import           Tholos.Errors             (TholosError (..))
 import           Tholos.Logging
 
 
-class ( MonadError CBError m
+class ( MonadError TholosError m
       , MonadThrow m
       , MonadIO m
       , MonadCatch m
       , MonadLogger m
       ) => MonadTholos m
 
-type CommonT = ExceptT CBError (LoggingT IO)
+type CommonT = ExceptT TholosError (LoggingT IO)
 
-runCommonT :: CommonT a -> IO (Either CBError a)
+runCommonT :: CommonT a -> IO (Either TholosError a)
 runCommonT = flip runLoggingT logMsg . runExceptT 

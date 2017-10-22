@@ -27,7 +27,7 @@ newtype PGDB a =
              , MonadIO
              , MonadCatch
              , MonadLogger
-             , MonadError CBError
+             , MonadError TholosError
              , MonadThrow
              )
 instance MonadTholos PGDB

@@ -1,23 +1,27 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
-module API.V0Spec (main, spec) where
+module API.Spec (main, spec) where
 
 -- import           Control.Lens.Lens         ((&))
-import           Data.Aeson                (toJSON)
+import           Data.Aeson
 -- import           Data.ByteString.Base16    (decode, encode)
-import           Data.Monoid               ((<>))
+import qualified Data.ByteString.Lazy         as BSL
+import           Data.Monoid                  ((<>))
 -- import           Data.Text                 (Text)
-import           Network.Wai.Handler.Warp  (testWithApplication)
-import           Network.Wreq              (Response, defaults, getWith,
-                                             postWith, responseBody)
-import           Network.Wreq.Types        (Options (..))
+import           Data.Either
+import           Network.Wai.Handler.Warp     (testWithApplication)
+import           Network.Wreq                 (Response, defaults, getWith,
+                                               postWith, responseBody)
+import           Network.Wreq.Types           (Options (..))
 import           Test.Hspec
-import           Test.QuickCheck.Arbitrary  (Arbitrary (..))
-import           Test.QuickCheck.Gen        (generate)
+import           Test.QuickCheck.Arbitrary    (Arbitrary (..))
+import           Test.QuickCheck.Gen          (generate)
 
-import           App
-import           Config.Environment
 import           Tholos.API.Types
+import           Tholos.Types
+import           Tholos.App
+import           Tholos.AppConfig.Environment
 import           Tholos.Business.Interface
 -- import           Tholos.Crypto
 
@@ -29,16 +33,15 @@ spec = apiSpec
 
 apiSpec :: Spec
 apiSpec =
-    describe "API Spec return appropriate values" $
+    describe "API Spec" $
     around (testWithApplication (app <$> mkAppConfig)) $ do
+      it "should call POST /users and return a new userId" $ \port -> do
+        user <- toJSON <$> (generate arbitrary :: IO PostUserBody)
+        eResp :: Either String UserId <- decodeResponse <$> post "/users" port user
+        isRight eResp `shouldBe` True
       it "should call GET /users and return a list of existing users" $ \port -> do
         pendingWith "Underconstruction"
         resp <- get "/users" port
-        True `shouldBe` True
-      it "should call POST /users and return a new userId" $ \port -> do
-        pendingWith "Underconstruction"
-        user <- toJSON <$> (generate arbitrary :: IO PostUserBody)
-        resp <- post "/users" port user
         True `shouldBe` True
       it "should call GET /users/:userId/websites and return a list of website details" $ \port -> do
         pendingWith "Underconstruction"
@@ -63,7 +66,10 @@ routePrefix = "/api/v0"
 --Spec Utils
 ------------------------------------------------------------------------------
 
-options = defaults {headers=[("Accept","application/vnd.api+json")]}
+decodeResponse :: FromJSON m => Response BSL.ByteString -> Either String m
+decodeResponse = undefined
+
+options = defaults --{headers=[("Content-Type","application/json")]}
 
 buildUrl route port = "http://localhost:" <> (show port) <> routePrefix <> route
 
@@ -71,8 +77,6 @@ get r p = getWith options (buildUrl r p)
 
 post r p = postWith options (buildUrl r p)
 
-mkAppConfig :: IO (AppConfig IO)
-mkAppConfig = return $ AppConfig Test 8000 irf
+mkAppConfig :: IO AppConfig
+mkAppConfig = return $ AppConfig Test 8000
 
-irf :: IBusinessFunctions IO
-irf = undefined

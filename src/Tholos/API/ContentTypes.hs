@@ -19,7 +19,7 @@ import           Servant
 data JSONAPI deriving Typeable
 
 instance Accept JSONAPI where
-  contentType _ = ("application" :: ByteString) // ("vnd.api+json" :: ByteString)
+  contentType _ = ("application" :: ByteString)  // ("json" :: ByteString)
 instance ToJSON a => MimeRender JSONAPI a where
   mimeRender _ = encode
 instance FromJSON a => MimeUnrender JSONAPI a where

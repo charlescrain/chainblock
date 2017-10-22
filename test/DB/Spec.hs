@@ -2,7 +2,7 @@
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DB.DBSpec (main, spec) where
+module DB.Spec (main, spec) where
 
 import           Control.Monad.Except       (ExceptT (..), runExceptT)
 import           Data.Either
@@ -44,7 +44,7 @@ dbSpec =
       websiteSpec dbi
       credentialsSpec dbi
 
-userSpec :: IDataBase (ExceptT CBError IO)  -> Spec
+userSpec :: IDataBase (ExceptT TholosError IO)  -> Spec
 userSpec dbi =
   describe "User Spec" $ do
     it "should query all created users" $ do
@@ -113,7 +113,7 @@ userSpec dbi =
       eResDelete <- runExceptT $ deleteUser dbi nonExistentId
       isLeft eResDelete `shouldBe` True
 
-websiteSpec :: IDataBase (ExceptT CBError IO)  -> Spec
+websiteSpec :: IDataBase (ExceptT TholosError IO)  -> Spec
 websiteSpec dbi = describe "Website Spec" $ do
     it "should query all websites for a user" $ do
       testUsername <- generate arbitrary
@@ -204,7 +204,7 @@ websiteSpec dbi = describe "Website Spec" $ do
       eResDelete <- runExceptT $ deleteWebsite dbi webId'
       isRight eResDelete `shouldBe` False
 
-credentialsSpec :: IDataBase (ExceptT CBError IO)  -> Spec
+credentialsSpec :: IDataBase (ExceptT TholosError IO)  -> Spec
 credentialsSpec dbi = describe "Credentials Spec" $ do
     it "should create a credentials and query the credentials" $ do
       testUsername <- generate arbitrary

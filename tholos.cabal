@@ -38,6 +38,7 @@ library
   exposed-modules:
                         Tholos.API
                       , Tholos.API.ContentTypes
+                      , Tholos.API.Class
                       , Tholos.API.V0
                       , Tholos.API.Types
                       , Tholos.App
@@ -134,4 +135,4 @@ test-suite              webapp-test
 
  default-extensions:  OverloadedStrings
 
- other-modules:       CryptoSpec
+ other-modules:       

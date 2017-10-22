@@ -1,4 +1,4 @@
-.PHONY: start test test-db
+.PHONY: start test test-db test-api
 
 start:
 	ENV=Development \
@@ -30,6 +30,22 @@ test-db:
 		PG_PASSWORD=password \
 		stack test tholos --test-arguments="--match=Data"
 
-test-business:
+test-server:
 	ENV=Test \
-		stack test tholos --test-arguments="--match=Business"
+		PORT=3000 \
+		PG_HOST=localhost \
+		PG_PORT=5432 \
+		PG_DBNAME=chainblocktest \
+		PG_USER=postgres \
+		PG_PASSWORD=password \
+		stack test tholos --test-arguments="--match=Server"
+
+test-api:
+	ENV=Test \
+		PORT=3000 \
+		PG_HOST=localhost \
+		PG_PORT=5432 \
+		PG_DBNAME=chainblocktest \
+		PG_USER=postgres \
+		PG_PASSWORD=password \
+		stack test tholos --test-arguments="--match=API"

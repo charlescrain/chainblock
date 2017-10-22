@@ -31,6 +31,8 @@ import           Opaleye.QueryArr           (Query)
 import           Opaleye.RunQuery           (runQuery)
 import           System.Environment         (getEnv)
 
+import qualified Tholos.API.Class as API
+import  Tholos.App.Transformer
 import           Tholos.DB.Interface
 import           Tholos.DB.Postgres.Setup   (createDBIfNeeded)
 import           Tholos.DB.Postgres.Tables
@@ -68,14 +70,14 @@ createInterface conn runInterface =
 -- | runDBInterface Functions
 -----------------------------------------------------
 
-runInterfaceExceptT :: PGDB a -> (ExceptT CBError IO) a
+runInterfaceExceptT :: PGDB a -> (ExceptT TholosError IO) a
 runInterfaceExceptT = ExceptT . runCommonT . runPGDB
 
 runInterfaceCommonT :: PGDB a -> CommonT a
 runInterfaceCommonT = runPGDB
 
 -----------------------------------------------------
--- | Interface Implementation
+-- | Instances 
 -----------------------------------------------------
 
 -----------------------------------------------------
