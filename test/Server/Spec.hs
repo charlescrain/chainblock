@@ -24,7 +24,6 @@ import           Tholos.Server.V0
 import           Tholos.Types
 import           Tholos.App
 import           Tholos.AppConfig.Environment
-import           Tholos.Business.Interface
 -- import           Tholos.Crypto
 
 main :: IO ()
@@ -37,10 +36,21 @@ serverSpec :: Spec
 serverSpec =
     describe "Server Spec" $ do
       it "should post a new user and get a userId" $ do
-        postUser <- generate arbitrary
-        eRes <- postUserEntryPoint postUser
-        True `shouldBe` True
-        pending
+        un <- generate arbitrary
+        res <- postUserEntryPoint un
+        expected <- insertUser un
+        res `shouldBe` expected
+      it "should get a list of users" $ do
+        res <- getUsersEntryPoint
+        expected <- getUsers
+        res `shouldBe` expected
+      it "should post a new website" $ do
+        userid <- generate arbitrary
+        weburl <- generate arbitrary
+        webname <- generate arbitrary
+        res <- postWebsiteEntryPoint userid (PostWebsite weburl webname)
+        expected <- undefined
+        res `shouldBe` expected
 
 
 ------------------------------------------------------------------------------
@@ -48,7 +58,15 @@ serverSpec =
 ------------------------------------------------------------------------------
 
 instance DBModifyUser IO where
-  insertUser = undefined
+  insertUser _ = return $ UserId 1
+
+instance DBQueryUser IO where
+  getUsers = return $ [ User (Username "taj-burrow") (UserId 1)
+                      , User (Username "kelly-slates") (UserId 2)
+                      ]
+             
+instance DBModifyWebsite IO where
+  insertWebsite _ _ _ = return $ WebsiteId 1
 -- mkAppConfig :: IO AppConfig
 -- mkAppConfig = return $ AppConfig Test 8000
 -- 

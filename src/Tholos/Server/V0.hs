@@ -29,13 +29,14 @@ userEntryPoints  = getUsersEntryPoint
               :<|> websiteEntryPoints
 
 getUsersEntryPoint :: ( MonadIO m
+                      , DBQueryUser m
                       ) => m [User]
-getUsersEntryPoint = undefined
+getUsersEntryPoint = getUsers
 
 postUserEntryPoint :: ( MonadIO m
                       , DBModifyUser m
-                      ) => PostUserBody -> m UserId
-postUserEntryPoint _ = undefined
+                      ) => Username -> m UserId
+postUserEntryPoint un = insertUser un
 
 websiteEntryPoints :: UserId -> ServerT WebsiteSubRouteAPI (TholosT)
 websiteEntryPoints uId = getWebsitesEntryPoint uId
@@ -46,7 +47,9 @@ websiteEntryPoints uId = getWebsitesEntryPoint uId
 getWebsitesEntryPoint :: UserId -> TholosT [WebsiteDetails]
 getWebsitesEntryPoint _ = undefined
 
-postWebsiteEntryPoint :: UserId -> PostWebsite -> TholosT WebsiteId
+postWebsiteEntryPoint :: ( MonadIO m
+                         , DBModifyWebsite m
+                         ) => UserId -> PostWebsite -> m WebsiteId
 postWebsiteEntryPoint _ _ = undefined
 
 postCredentialsEntrypoint :: UserId -> WebsiteId -> PostCredentials -> TholosT ()

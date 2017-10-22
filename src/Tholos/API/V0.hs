@@ -15,7 +15,7 @@ type API = "v0" :> UserSubRouteAPI
 
 type UserSubRouteAPI =
         "users" :> Get '[JSONAPI] [User]
-   :<|> "users" :> ReqBody '[JSONAPI] PostUserBody :> Post '[JSONAPI] UserId
+   :<|> "users" :> ReqBody '[JSONAPI] Username :> Post '[JSONAPI] UserId
    :<|> "users" :> Capture "id" UserId :> WebsiteSubRouteAPI
 
 type WebsiteSubRouteAPI =

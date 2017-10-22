@@ -45,3 +45,9 @@ tholosErrorToServantErr err = case err of
 
 instance DBModifyUser TholosT where
   insertUser = undefined
+
+instance DBQueryUser TholosT where
+  getUsers = undefined
+
+instance DBModifyWebsite TholosT where
+  insertWebsite = undefined
