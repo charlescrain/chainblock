@@ -44,18 +44,46 @@ serverSpec =
         res <- getUsersEntryPoint
         expected <- getUsers
         res `shouldBe` expected
-      it "should post a new website" $ do
+      it "should post a website and get a websiteId" $ do
         userid <- generate arbitrary
         weburl <- generate arbitrary
         webname <- generate arbitrary
         res <- postWebsiteEntryPoint userid (PostWebsite weburl webname)
-        expected <- undefined
+        expected <- insertWebsite userid weburl webname
+        res `shouldBe` expected
+      it "should get a websites for a user" $ do
+        userid <- generate arbitrary
+        res <- getWebsitesEntryPoint userid 
+        expected <- getWebsites userid
+        res `shouldBe` expected
+      it "should post website credentials for a user" $ do
+        postcreds <- generate arbitrary
+        userid <- generate arbitrary
+        webid <- generate arbitrary
+        res <- postCredentialsEntryPoint userid webid postcreds
+        let expected = ()
+        res `shouldBe` expected
+      it "should get a website credentials for a user" $ do
+        pmk <- generate arbitrary
+        userid <- generate arbitrary
+        webid <- generate arbitrary
+        res <- getCredentialsEntryPoint userid webid pmk
+        let expected = undefined
         res `shouldBe` expected
 
 
 ------------------------------------------------------------------------------
 -- | Spec Utils
 ------------------------------------------------------------------------------
+
+postMasterKey' :: PostMasterKey
+postMasterKey' = undefined
+
+webUsername' :: WebUsername
+webUsername' = undefined
+
+plaintextPass :: PlainTextPassword
+plaintextPass = undefined
 
 instance DBModifyUser IO where
   insertUser _ = return $ UserId 1
@@ -64,9 +92,25 @@ instance DBQueryUser IO where
   getUsers = return $ [ User (Username "taj-burrow") (UserId 1)
                       , User (Username "kelly-slates") (UserId 2)
                       ]
-             
+
 instance DBModifyWebsite IO where
   insertWebsite _ _ _ = return $ WebsiteId 1
+
+instance DBQueryWebsite IO where
+  getWebsites uId = do
+    let wDetails = WebsiteDetails { websiteURL = WebsiteURL "http://barrels.com"
+                                  , websiteName = WebsiteName "Barrels"
+                                  , websiteId = WebsiteId 1
+                                  , userId = uId
+                                  }
+    return  [wDetails]
+
+instance Encrypt IO where
+  encrypt _ _ = return $ EncryptedPassword "EncryptedTextOMG"
+
+instance DBModifyCredentials IO where
+  insertCredentials _ _ _ _ = return $ CredentialsId 1
+
 -- mkAppConfig :: IO AppConfig
 -- mkAppConfig = return $ AppConfig Test 8000
 -- 

@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts         #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
+{-# LANGUAGE ScopedTypeVariables     #-}
 
 module Tholos.Server.V0 where
 
@@ -41,19 +42,45 @@ postUserEntryPoint un = insertUser un
 websiteEntryPoints :: UserId -> ServerT WebsiteSubRouteAPI (TholosT)
 websiteEntryPoints uId = getWebsitesEntryPoint uId
                     :<|> postWebsiteEntryPoint uId
-                    :<|> postCredentialsEntrypoint uId
-                    :<|> getWebsiteCredentialsEntryPoint uId
+                    :<|> postCredentialsEntryPoint uId
+                    :<|> getCredentialsEntryPoint uId
 
-getWebsitesEntryPoint :: UserId -> TholosT [WebsiteDetails]
-getWebsitesEntryPoint _ = undefined
+getWebsitesEntryPoint :: ( MonadIO m
+                         , DBQueryWebsite m
+                         ) => UserId -> m [WebsiteDetails]
+getWebsitesEntryPoint = getWebsites 
 
 postWebsiteEntryPoint :: ( MonadIO m
                          , DBModifyWebsite m
                          ) => UserId -> PostWebsite -> m WebsiteId
-postWebsiteEntryPoint _ _ = undefined
+postWebsiteEntryPoint uId (PostWebsite{postWebURL= pwu, postWebsiteName=pwn}) =
+  insertWebsite uId pwu pwn
 
-postCredentialsEntrypoint :: UserId -> WebsiteId -> PostCredentials -> TholosT ()
-postCredentialsEntrypoint _ _ _ = undefined
+postCredentialsEntryPoint :: ( MonadIO m
+                             , Encrypt m
+                             , DBModifyCredentials m
+                             ) => UserId -> WebsiteId -> PostCredentials -> m ()
+postCredentialsEntryPoint uid wid PostCredentials{ postWebUsername = un
+                                                 , postWebPassword = pass
+                                                 , postMasterKey = PostMasterKey key
+                                                 } = do
+  ep <- encrypt key pass
+  _ <- insertCredentials uid wid ep un
+  return ()
 
-getWebsiteCredentialsEntryPoint :: UserId -> WebsiteId -> PostMasterKey -> TholosT Website
-getWebsiteCredentialsEntryPoint _ _ _ = undefined
+
+
+getCredentialsEntryPoint :: ( MonadIO m
+                            , DBQueryWebsite m
+                            , DBQueryCredentials m
+                            ) => UserId -> WebsiteId -> PostMasterKey -> m Website
+getCredentialsEntryPoint uid wid (PostMasterKey key) = do
+  creds <- getCredentials uid wid
+  webdetails <- getWebsite uid wid
+  decryptedCreds <- mapM decryptCreds creds
+  return Website { websiteDetails = webdetails
+                 , websiteCredentials = decryptedCreds
+                 }
+
+  where
+    decryptCreds = undefined

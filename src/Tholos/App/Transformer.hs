@@ -51,3 +51,16 @@ instance DBQueryUser TholosT where
 
 instance DBModifyWebsite TholosT where
   insertWebsite = undefined
+
+instance DBQueryWebsite TholosT where
+  getWebsites = undefined
+  getWebsite = undefined
+  
+instance DBModifyCredentials TholosT where
+  insertCredentials = undefined
+  
+instance DBQueryCredentials TholosT where
+  getCredentials = undefined
+
+instance Encrypt TholosT where
+  encrypt = undefined
