@@ -1,4 +1,4 @@
-module Tholos.AppConfig
+module Tholos.App.Config
   ( AppConfig(..)
   , getAppConfig
   , Environment (..)
@@ -8,7 +8,7 @@ import           Control.Monad.Error.Class (MonadError)
 import           Control.Monad.IO.Class    (MonadIO)
 import           System.Environment        (getEnv)
 
-import           Tholos.AppConfig.Environment
+import           Tholos.App.Environment
 import           Tholos.Business.Interface
 
 data AppConfig = AppConfig

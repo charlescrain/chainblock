@@ -43,11 +43,8 @@ library
                       , Tholos.API.Types
                       , Tholos.App
                       , Tholos.App.Transformer
-                      , Tholos.AppConfig
-                      , Tholos.AppConfig.Environment
-                      , Tholos.Business
-                      , Tholos.Business.Interface
-                      , Tholos.Business.Types
+                      , Tholos.App.Config
+                      , Tholos.App.Environment
                       , Tholos.Crypto
                       , Tholos.Crypto.Types
                       , Tholos.DB.Interface

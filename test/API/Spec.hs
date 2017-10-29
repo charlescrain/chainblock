@@ -21,8 +21,7 @@ import           Test.QuickCheck.Gen          (generate)
 import           Tholos.API.Types
 import           Tholos.Types
 import           Tholos.App
-import           Tholos.AppConfig.Environment
-import           Tholos.Business.Interface
+import           Tholos.App.Environment
 -- import           Tholos.Crypto
 
 main :: IO ()

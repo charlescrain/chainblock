@@ -4,7 +4,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators       #-}
 
-module Tholos.API where
+module Tholos.Server.API where
 
 import           Data.Text       (Text)
 import           Servant

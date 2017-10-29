@@ -22,7 +22,7 @@ import           Tholos.API.Class
 import           Tholos.Server.V0
 import           Tholos.Types
 import           Tholos.App
-import           Tholos.AppConfig.Environment
+import           Tholos.App.Environment
 -- import           Tholos.Crypto
 
 main :: IO ()

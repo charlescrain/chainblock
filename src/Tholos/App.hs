@@ -16,7 +16,7 @@ import           Servant
 
 import           Tholos.API
 import           Tholos.App.Transformer
-import           Tholos.AppConfig                     (AppConfig (..),
+import           Tholos.App.Config                     (AppConfig (..),
                                                        getAppConfig)
 import           Tholos.Server                        (server)
 
@@ -27,8 +27,8 @@ app cfg = logStdoutDev . cors (const $ Just corsPolicy) $
 readerServer :: AppConfig -> Server API
 readerServer cfg = enter (readerToEither cfg) server
 
-readerToEither :: AppConfig -> TholosT :~> Handler
-readerToEither cfg = Nat $ \tholosT -> runTholosT cfg tholosT
+readerToEither :: AppConfig -> AppT :~> Handler
+readerToEither cfg = Nat $ \tholosT -> runAppT cfg tholosT
 
 corsPolicy :: CorsResourcePolicy
 corsPolicy =

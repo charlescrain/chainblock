@@ -7,7 +7,7 @@ module Tholos.API.V0 where
 import           Servant
 
 import           Tholos.API.ContentTypes
-import           Tholos.App.Transformer  (TholosT)
+import           Tholos.App.Transformer  (AppT)
 import           Tholos.API.Types
 import           Tholos.Types
 

@@ -14,17 +14,17 @@ import           Servant
 import           Tholos.API.ContentTypes
 import           Tholos.API.Class
 import           Tholos.API.V0
-import           Tholos.App.Transformer  (TholosT)
+import           Tholos.App.Transformer  (AppT)
 import           Tholos.API.Types
-import           Tholos.AppConfig          (AppConfig)
+import           Tholos.App.Config          (AppConfig)
 import           Tholos.Types
 import           Tholos.Errors
 
 
-server :: ServerT API (TholosT)
+server :: ServerT API (AppT)
 server = userEntryPoints
 
-userEntryPoints :: ServerT UserSubRouteAPI (TholosT)
+userEntryPoints :: ServerT UserSubRouteAPI (AppT)
 userEntryPoints  = getUsersEntryPoint
               :<|> postUserEntryPoint
               :<|> websiteEntryPoints
@@ -39,7 +39,7 @@ postUserEntryPoint :: ( MonadIO m
                       ) => Username -> m UserId
 postUserEntryPoint un = insertUser un
 
-websiteEntryPoints :: UserId -> ServerT WebsiteSubRouteAPI (TholosT)
+websiteEntryPoints :: UserId -> ServerT WebsiteSubRouteAPI (AppT)
 websiteEntryPoints uId = getWebsitesEntryPoint uId
                     :<|> postWebsiteEntryPoint uId
                     :<|> postCredentialsEntryPoint uId
