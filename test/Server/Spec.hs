@@ -4,7 +4,6 @@
 module Server.Spec (main, spec) where
 
 -- import           Control.Lens.Lens         ((&))
-import           Data.Aeson
 -- import           Data.ByteString.Base16    (decode, encode)
 import qualified Data.ByteString.Lazy         as BSL
 import           Data.Monoid                  ((<>))
@@ -64,26 +63,26 @@ serverSpec =
         let expected = ()
         res `shouldBe` expected
       it "should get a website credentials for a user" $ do
-        pmk <- generate arbitrary
+        pmk@(PostMasterKey tpmk) <- generate arbitrary
         userid <- generate arbitrary
         webid <- generate arbitrary
+        ep <- generate arbitrary
         res <- getCredentialsEntryPoint userid webid pmk
-        let expected = undefined
+        expectPass <- decrypt tpmk ep
+        expectusername <- (webUsername . head) <$> getCredentials userid webid
+        expectWeb <- getWebsite userid webid
+        let expectWebCreds = [ WebsiteCredentials { username = expectusername
+                                                  , password = expectPass
+                                                  } ]
+            expected = Website { websiteDetails = expectWeb
+                               , websiteCredentials = expectWebCreds
+                               }
         res `shouldBe` expected
 
 
 ------------------------------------------------------------------------------
--- | Spec Utils
+-- | Spec Instances
 ------------------------------------------------------------------------------
-
-postMasterKey' :: PostMasterKey
-postMasterKey' = undefined
-
-webUsername' :: WebUsername
-webUsername' = undefined
-
-plaintextPass :: PlainTextPassword
-plaintextPass = undefined
 
 instance DBModifyUser IO where
   insertUser _ = return $ UserId 1
@@ -105,11 +104,30 @@ instance DBQueryWebsite IO where
                                   }
     return  [wDetails]
 
-instance Encrypt IO where
-  encrypt _ _ = return $ EncryptedPassword "EncryptedTextOMG"
+  getWebsite uId wid = do
+    let wDetails = WebsiteDetails { websiteURL = WebsiteURL "http://barrels.com"
+                                  , websiteName = WebsiteName "Barrels"
+                                  , websiteId = wid
+                                  , userId = uId
+                                  }
+    return  wDetails
+
+instance Crypto IO where
+  encrypt _ _ = return $ EncryptedPassword "ERMAGAAWWDNOTBARRELS"
+  decrypt _ _ = return $ PlainTextPassword "BARRELS"
 
 instance DBModifyCredentials IO where
   insertCredentials _ _ _ _ = return $ CredentialsId 1
+
+instance DBQueryCredentials IO where
+  getCredentials uid wid  = do
+    let creds = Credentials { credId = CredentialsId 1
+                            , webUsername = WebUsername "gandolfthegrayest"
+                            , encPassword = EncryptedPassword "ERMAGAAWDNOTBARRELS"
+                            , webId = wid
+                            , credUserId = uid
+                            }
+    return [creds]
 
 -- mkAppConfig :: IO AppConfig
 -- mkAppConfig = return $ AppConfig Test 8000

@@ -57,7 +57,7 @@ postWebsiteEntryPoint uId (PostWebsite{postWebURL= pwu, postWebsiteName=pwn}) =
   insertWebsite uId pwu pwn
 
 postCredentialsEntryPoint :: ( MonadIO m
-                             , Encrypt m
+                             , Crypto m
                              , DBModifyCredentials m
                              ) => UserId -> WebsiteId -> PostCredentials -> m ()
 postCredentialsEntryPoint uid wid PostCredentials{ postWebUsername = un
@@ -73,6 +73,7 @@ postCredentialsEntryPoint uid wid PostCredentials{ postWebUsername = un
 getCredentialsEntryPoint :: ( MonadIO m
                             , DBQueryWebsite m
                             , DBQueryCredentials m
+                            , Crypto m
                             ) => UserId -> WebsiteId -> PostMasterKey -> m Website
 getCredentialsEntryPoint uid wid (PostMasterKey key) = do
   creds <- getCredentials uid wid
@@ -83,4 +84,11 @@ getCredentialsEntryPoint uid wid (PostMasterKey key) = do
                  }
 
   where
-    decryptCreds = undefined
+    decryptCreds creds = do
+      let epass = encPassword creds
+          un = webUsername creds
+      pass <- decrypt key epass
+      return WebsiteCredentials { username = un
+                                , password = pass
+                                }
+      

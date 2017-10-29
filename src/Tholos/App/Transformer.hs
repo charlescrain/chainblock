@@ -62,5 +62,6 @@ instance DBModifyCredentials TholosT where
 instance DBQueryCredentials TholosT where
   getCredentials = undefined
 
-instance Encrypt TholosT where
+instance Crypto TholosT where
   encrypt = undefined
+  decrypt = undefined

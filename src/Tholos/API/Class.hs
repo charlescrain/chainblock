@@ -4,6 +4,7 @@
 module Tholos.API.Class where
 
 import           Tholos.Types
+import           Tholos.Crypto.Types
 import Data.Text (Text)
 
 class DBModifyUser m where
@@ -14,19 +15,18 @@ class DBQueryUser m where
 
 class DBModifyWebsite m where
   insertWebsite :: UserId -> WebsiteURL -> WebsiteName -> m WebsiteId
-  
+
 class DBQueryWebsite m where
   getWebsites :: UserId -> m [WebsiteDetails]
   getWebsite :: UserId -> WebsiteId -> m WebsiteDetails
 
 class DBModifyCredentials m where
   insertCredentials :: UserId -> WebsiteId -> EncryptedPassword -> WebUsername -> m CredentialsId
-  
+
 class DBQueryCredentials m where
-  getCredentials :: UserId -> WebsiteId -> m [(WebUsername, EncryptedPassword)]
+  getCredentials :: UserId -> WebsiteId -> m [Credentials]
 
-class Encrypt m where
+class Crypto m where
   encrypt :: Text -> PlainTextPassword -> m EncryptedPassword
+  decrypt :: Text -> EncryptedPassword -> m PlainTextPassword
 
-class Decrypt m where
-  decrypt :: Text -> PlainTextPassword -> m EncryptedPassword
