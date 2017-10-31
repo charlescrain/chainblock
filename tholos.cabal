@@ -50,6 +50,7 @@ library
                       , Tholos.DB.Interface
                       , Tholos.DB.Postgres
                       , Tholos.DB.Postgres.Setup
+                      , Tholos.DB.Postgres.Class
                       , Tholos.DB.Postgres.Tables
                       , Tholos.DB.Postgres.Types
                       , Tholos.Errors
@@ -103,6 +104,7 @@ test-suite              webapp-test
                       , base16-bytestring
                       , bytestring
                       , tholos
+                      , exceptions
                       , cryptonite
                       , QuickCheck 
                       , hspec
@@ -110,6 +112,7 @@ test-suite              webapp-test
                       , lens
                       , memory
                       , mtl
+                      , monad-logger
                       , postgresql-simple
                       , servant-server
                       , text

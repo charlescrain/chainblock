@@ -11,9 +11,10 @@ module Tholos.DB.Postgres where
 import           Control.Arrow              (returnA)
 import           Control.Monad.Catch        (Exception (..), SomeException (..),
                                              catch, throwM, try)
-import           Control.Monad.Except       (ExceptT (..), runExceptT,
+import           Control.Monad.Except       (MonadError(..), ExceptT (..), runExceptT,
                                              throwError)
-import           Control.Monad.IO.Class     (liftIO)
+import           Control.Monad.IO.Class     (MonadIO, liftIO)
+import           Control.Monad.Catch    (MonadCatch, MonadThrow)
 import           Control.Monad.Logger
 import           Data.ByteString            (ByteString)
 import           Data.ByteString.Lazy       (toStrict)
@@ -36,6 +37,7 @@ import  Tholos.App.Transformer
 import           Tholos.DB.Interface
 import           Tholos.DB.Postgres.Setup   (createDBIfNeeded)
 import           Tholos.DB.Postgres.Tables
+import           Tholos.DB.Postgres.Class
 import           Tholos.DB.Postgres.Types   (PGDB (..))
 import           Tholos.Types
 import           Tholos.Errors
@@ -47,8 +49,8 @@ createInterface :: Connection
                   -> (forall a . PGDB a -> m a )
                   -> IO (IDataBase m)
 createInterface conn runInterface =
-  return IDataBase { queryAllUsers = runInterface $ queryAllUsers' conn
-                   , queryUser     = runInterface . queryUser' conn
+  return IDataBase { -- queryAllUsers = runInterface $ queryAllUsers' conn
+                    queryUser     = runInterface . queryUser' conn
                    , insertUser    = runInterface . insertUser'   conn
                    , updateUser    = \x y -> runInterface $ updateUser' conn  x y
                    , deleteUser    = runInterface . deleteUser'   conn
@@ -84,9 +86,16 @@ runInterfaceCommonT = runPGDB
 ---- | User
 -----------------------------------------------------
 
-queryAllUsers' :: Connection -> PGDB [User]
-queryAllUsers' conn = do
+queryAllUsers :: ( PGConn m
+                 , MonadError TholosError m
+                 , MonadThrow m
+                 , MonadCatch m
+                 , MonadIO m
+                 , MonadLogger m
+                 ) => m [User]
+queryAllUsers = do
   let src = "queryAllUsers'"
+  conn <- getConn
   $logInfoS src "querying all users"
   rows <- catch (liftIO $ runQuery conn queryUsers)
     (\ (err :: SomeException) -> throwError . Ex $ err)

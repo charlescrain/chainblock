@@ -4,6 +4,7 @@
 
 module Tholos.App.Transformer where
 
+import           Control.Monad.Catch    (MonadCatch, MonadThrow)
 import           Control.Monad.Except
 import           Control.Monad.IO.Class (MonadIO)
 import           Control.Monad.Logger
@@ -22,7 +23,10 @@ newtype AppT a = AppT { unApp :: ReaderT AppConfig (ExceptT TholosError (Logging
            , Applicative
            , Monad
            , MonadIO
+           , MonadThrow
+           , MonadCatch
            , MonadReader AppConfig
+           , MonadLogger
            , MonadError TholosError
            )
 

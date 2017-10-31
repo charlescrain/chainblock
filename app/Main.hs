@@ -14,18 +14,18 @@ import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import           Servant
 
 import           Tholos.API
-import           Tholos.App                                  (AppConfig (..), app,
-                                                       getAppConfig)
-import           Tholos.App.Transformer                      (AppT)
-import           Tholos.Server                               (server)
+import           Tholos.App
+import           Tholos.App.Config
+import           Tholos.App.Transformer               (AppT)
 import qualified Tholos.DB.Postgres                   as DB
 import           Tholos.DB.Postgres.Setup
+import           Tholos.Server                        (server)
 
 main :: IO ()
 main = do
   conn <- initDB
 
-  cfg <- getAppConfig
+  cfg <- mkAppConfig conn
   run (appPort cfg) (app cfg)
 
 initDB :: IO Connection

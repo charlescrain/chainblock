@@ -1,4 +1,4 @@
-.PHONY: start test test-db test-api
+.PHONY: start test test-db test-integration test-server
 
 start:
 	ENV=Development \
@@ -40,7 +40,7 @@ test-server:
 		PG_PASSWORD=password \
 		stack test tholos --test-arguments="--match=Server"
 
-test-api:
+test-integration:
 	ENV=Test \
 		PORT=3000 \
 		PG_HOST=localhost \
@@ -48,4 +48,4 @@ test-api:
 		PG_DBNAME=chainblocktest \
 		PG_USER=postgres \
 		PG_PASSWORD=password \
-		stack test tholos --test-arguments="--match=API"
+		stack test tholos --test-arguments="--match=Integration"

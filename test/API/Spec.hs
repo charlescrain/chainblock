@@ -6,22 +6,27 @@ module API.Spec (main, spec) where
 -- import           Control.Lens.Lens         ((&))
 import           Data.Aeson
 -- import           Data.ByteString.Base16    (decode, encode)
-import qualified Data.ByteString.Lazy         as BSL
-import           Data.Monoid                  ((<>))
+import qualified Data.ByteString.Lazy       as BSL
+import           Data.Monoid                ((<>))
 -- import           Data.Text                 (Text)
 import           Data.Either
-import           Network.Wai.Handler.Warp     (testWithApplication)
-import           Network.Wreq                 (Response, defaults, getWith,
-                                               postWith, responseBody)
-import           Network.Wreq.Types           (Options (..))
+import           Database.PostgreSQL.Simple (ConnectInfo (..), Connection,
+                                             connect)
+import           Network.Wai.Handler.Warp   (testWithApplication)
+import           Network.Wreq               (Response, defaults, getWith,
+                                             postWith, responseBody)
+import           Network.Wreq.Types         (Options (..))
 import           Test.Hspec
-import           Test.QuickCheck.Arbitrary    (Arbitrary (..))
-import           Test.QuickCheck.Gen          (generate)
+import           Test.QuickCheck.Arbitrary  (Arbitrary (..))
+import           Test.QuickCheck.Gen        (generate)
 
 import           Tholos.API.Types
-import           Tholos.Types
 import           Tholos.App
+import           Tholos.App.Config
 import           Tholos.App.Environment
+import qualified Tholos.DB.Postgres         as DB
+import           Tholos.DB.Postgres.Setup
+import           Tholos.Types
 -- import           Tholos.Crypto
 
 main :: IO ()
@@ -31,9 +36,10 @@ spec :: Spec
 spec = apiSpec
 
 apiSpec :: Spec
-apiSpec =
-    describe "API Spec" $
-    around (testWithApplication (app <$> mkAppConfig)) $ do
+apiSpec = do
+  conn <- runIO initDB
+  describe "API Integration Spec" $
+    around (testWithApplication (app <$> mkAppConfig conn)) $ do
       it "should call POST /users and return a new userId" $ \port -> do
         user <- toJSON <$> (generate arbitrary :: IO PostUserBody)
         eResp :: Either String UserId <- decodeResponse <$> post "/users" port user
@@ -65,6 +71,13 @@ routePrefix = "/api/v0"
 --Spec Utils
 ------------------------------------------------------------------------------
 
+initDB :: IO Connection
+initDB = do
+  connInfo <- DB.buildConnectInfo
+  let dbName = connectDatabase connInfo
+  _ <- createDBIfNeeded connInfo dbName
+  connect connInfo
+
 decodeResponse :: FromJSON m => Response BSL.ByteString -> Either String m
 decodeResponse = undefined
 
@@ -76,6 +89,6 @@ get r p = getWith options (buildUrl r p)
 
 post r p = postWith options (buildUrl r p)
 
-mkAppConfig :: IO AppConfig
-mkAppConfig = return $ AppConfig Test 8000
+-- mkAppConfig :: IO AppConfig
+-- mkAppConfig = return $ AppConfig Test 8000
 

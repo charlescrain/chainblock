@@ -1,10 +1,15 @@
 {-# LANGUAGE OverloadedStrings   #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE RankNTypes          #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DB.Spec (main, spec) where
+module DB.Postgres.Spec (main, spec) where
 
-import           Control.Monad.Except       (ExceptT (..), runExceptT)
+import           Control.Monad.Catch        (MonadCatch, MonadThrow)
+import           Control.Monad.Except
+import           Control.Monad.IO.Class
+import           Control.Monad.Logger
+import           Control.Monad.Reader
 import           Data.Either
 import           Data.List                  (elem)
 import           Database.PostgreSQL.Simple (ConnectInfo (..), Connection,
@@ -13,11 +18,14 @@ import           Test.Hspec
 import           Test.QuickCheck.Arbitrary  (Arbitrary (..))
 import           Test.QuickCheck.Gen        (generate)
 
+import           Tholos.App.Config
 import           Tholos.DB.Interface
 import           Tholos.DB.Postgres
+import           Tholos.DB.Postgres.Class
 import           Tholos.DB.Postgres.Setup
-import           Tholos.Types
 import           Tholos.Errors
+import           Tholos.Logging
+import           Tholos.Types
 
 main :: IO ()
 main = hspec spec
@@ -31,21 +39,22 @@ dbSpec =
   describe "Data layer Tests" $ do
     connInfo <- runIO buildConnectInfo
     conn <- runIO $ initDB connInfo
+    cfg <- runIO $  mkAppConfig conn
     dbi <- runIO $ createInterface conn runInterfaceExceptT
     afterAll_
       ( do
           close conn
           dropDB connInfo
       ) $
-      runDBSpecs dbi
+      runDBSpecs dbi cfg
   where
-    runDBSpecs dbi = do
-      userSpec dbi
+    runDBSpecs dbi cfg = do
+      userSpec dbi cfg
       websiteSpec dbi
       credentialsSpec dbi
 
-userSpec :: IDataBase (ExceptT TholosError IO)  -> Spec
-userSpec dbi =
+userSpec :: IDataBase (ExceptT TholosError IO) -> AppConfig -> Spec
+userSpec dbi cfg =
   describe "User Spec" $ do
     it "should query all created users" $ do
       usernames <- mapM (\ _ -> generate arbitrary) [0..4 :: Int]
@@ -53,7 +62,8 @@ userSpec dbi =
                           usernames
       mapM_ (shouldBe True . isRight)  eResInserts
 
-      eResQuery <- runExceptT . queryAllUsers $ dbi
+      eResQuery <- runDBTest cfg queryAllUsers
+      logIfLeft eResQuery
       isRight eResQuery `shouldBe` True
 
       let Right ress = eResQuery
@@ -325,7 +335,30 @@ credentialsSpec dbi = describe "Credentials Spec" $ do
 
 
 ------------------------------------------------------------------------------
---Spec Utils
+-- | Spec Transformer
+------------------------------------------------------------------------------
+
+newtype DBTestT a = DBTestT { unDBTestT :: ReaderT AppConfig (ExceptT TholosError (LoggingT IO)) a }
+    deriving ( Functor
+             , Applicative
+             , Monad
+             , MonadIO
+             , MonadCatch
+             , MonadLogger
+             , MonadError TholosError
+             , MonadReader AppConfig
+             , MonadThrow
+             )
+
+runDBTest :: AppConfig -> DBTestT a -> IO (Either TholosError a)
+runDBTest cfg dbtest = flip runLoggingT logMsg $ runExceptT (runReaderT (unDBTestT dbtest) cfg)
+
+instance PGConn DBTestT where
+  getConn = conn <$> ask
+
+
+------------------------------------------------------------------------------
+-- | Spec Utils
 ------------------------------------------------------------------------------
 
 initDB :: ConnectInfo -> IO Connection
@@ -333,4 +366,8 @@ initDB connInfo = do
   let dbName = connectDatabase connInfo
   _ <- createDBIfNeeded connInfo dbName
   connect connInfo
+
+logIfLeft :: Show b => Either b a -> IO ()
+logIfLeft (Left msg) = print msg
+logIfLeft _ = return ()
 

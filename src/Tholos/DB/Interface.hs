@@ -18,8 +18,8 @@ import           Tholos.Errors             (TholosError (..))
 
 data IDataBase m  =
   IDataBase { -- Users
-              queryAllUsers :: m [User]
-            , queryUser     :: Username             -> m User
+              -- queryAllUsers :: m [User]
+              queryUser     :: Username             -> m User
             , insertUser    :: Username             -> m UserId
             , updateUser    :: UserId   -> Username -> m ()
             , deleteUser    :: UserId               -> m ()

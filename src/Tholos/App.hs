@@ -1,11 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators     #-}
 
-module Tholos.App
-  ( app
-  , AppConfig(..)
-  , getAppConfig
-  ) where
+module Tholos.App where
 
 import           Control.Monad.IO.Class               (MonadIO)
 import           Data.Monoid                          ((<>))
@@ -15,9 +11,9 @@ import           Network.Wai.Middleware.RequestLogger (logStdoutDev)
 import           Servant
 
 import           Tholos.API
+import           Tholos.App.Config
 import           Tholos.App.Transformer
-import           Tholos.App.Config                     (AppConfig (..),
-                                                       getAppConfig)
+
 import           Tholos.Server                        (server)
 
 app :: AppConfig -> Wai.Application
